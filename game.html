@@ -5,7 +5,7 @@
         var canvas;
         var canvasContext;
         var ballX = 50;
-        var ballSpeedX = 10;
+        var ballSpeedX = 5;
 
         window.onload = function() {
             canvas = document.getElementById("gameCanvas");
@@ -25,14 +25,24 @@
         }
 
         function drawEverything() { 
+            //field
             colorRect(0,0,canvas.width, canvas.height,"black");
+            //left paddle
             colorRect(0,210,10, 100,"white");
-            colorRect(ballX,100,10, 10,"red");
+            //ball
+            colorCircle(ballX, 150, 10, "white")
         }
 
         function colorRect(leftX, topY, width, height, drawColor) {
             canvasContext.fillStyle = drawColor;
             canvasContext.fillRect(leftX,topY,width,height)
+        }
+
+        function colorCircle(centerX, centerY, radius, drawColor){
+            canvasContext.fillStyle = drawColor
+            canvasContext.beginPath();
+            canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true)
+            canvasContext.fill();
         }
     </script>
 </html>
