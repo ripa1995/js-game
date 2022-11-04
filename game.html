@@ -1,11 +1,26 @@
 <html>
-    some text here
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script>
         var canvas;
         var canvasContext;
         var ballX = 50;
         var ballSpeedX = 5;
+        var ballY = 50;
+        var ballSpeedY = 2;
+        const BALL_RADIUS = 10;
+        const PADDLE_HEIGHT = 100;
+        var paddle1Y = 210; 
+
+        function calculateMousePos(evt) {
+            var rect = canvas.getBoundingClientRect();
+            var root = document.documentElement;
+            var mouseX = evt.clientX - rect.left - root.scrollLeft;
+            var mouseY = evt.clientY - rect.top - root.scrollTop;
+            return {
+                x:mouseX,
+                y:mouseY
+            };
+        }
 
         window.onload = function() {
             canvas = document.getElementById("gameCanvas");
@@ -15,12 +30,23 @@
                 moveEverything();
                 drawEverything();
             }, 1000/framesPerSecond);
+
+            canvas.addEventListener("mousemove",
+                function(evt) {
+                    var mousePos = calculateMousePos(evt);
+                    paddle1Y = mousePos.y-(PADDLE_HEIGHT/2)
+                }
+            )
         }   
 
         function moveEverything() {
             ballX = ballX + ballSpeedX
-            if (ballX > canvas.width || ballX < 0) {
+            ballY = ballY + ballSpeedY
+            if (ballX > (canvas.width - BALL_RADIUS/2) || ballX < BALL_RADIUS/2) {
                 ballSpeedX = -ballSpeedX
+            }
+            if (ballY > (canvas.height  - BALL_RADIUS/2) || ballY < BALL_RADIUS/2) {
+                ballSpeedY = -ballSpeedY
             }
         }
 
@@ -28,9 +54,9 @@
             //field
             colorRect(0,0,canvas.width, canvas.height,"black");
             //left paddle
-            colorRect(0,210,10, 100,"white");
+            colorRect(0,paddle1Y,10, PADDLE_HEIGHT, "white");
             //ball
-            colorCircle(ballX, 150, 10, "white")
+            colorCircle(ballX, ballY, BALL_RADIUS, "white")
         }
 
         function colorRect(leftX, topY, width, height, drawColor) {
