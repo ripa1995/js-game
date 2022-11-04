@@ -9,7 +9,9 @@
         var ballSpeedY = 2;
         const BALL_RADIUS = 10;
         const PADDLE_HEIGHT = 100;
-        var paddle1Y = 210; 
+        const PADDLE_WIDTH = 10;
+        var paddle1Y = 250;
+        var paddle2Y = 250; 
 
         function calculateMousePos(evt) {
             var rect = canvas.getBoundingClientRect();
@@ -25,6 +27,7 @@
         window.onload = function() {
             canvas = document.getElementById("gameCanvas");
             canvasContext = canvas.getContext("2d");
+            ballReset();
             var framesPerSecond = 30
             setInterval(function() {
                 moveEverything();
@@ -39,11 +42,21 @@
             )
         }   
 
+        function ballReset() {
+            ballSpeedX = -ballSpeedX
+            ballX = canvas.width/2;
+            ballY = canvas.height/2;
+        }
+
         function moveEverything() {
             ballX = ballX + ballSpeedX
             ballY = ballY + ballSpeedY
             if (ballX > (canvas.width - BALL_RADIUS/2) || ballX < BALL_RADIUS/2) {
-                ballSpeedX = -ballSpeedX
+                if ((ballY>paddle1Y && ballY<paddle1Y+PADDLE_HEIGHT) || (ballY>paddle2Y && ballY<paddle2Y+PADDLE_HEIGHT)) {
+                    ballSpeedX = -ballSpeedX
+                } else {
+                    ballReset()
+                }
             }
             if (ballY > (canvas.height  - BALL_RADIUS/2) || ballY < BALL_RADIUS/2) {
                 ballSpeedY = -ballSpeedY
@@ -54,7 +67,9 @@
             //field
             colorRect(0,0,canvas.width, canvas.height,"black");
             //left paddle
-            colorRect(0,paddle1Y,10, PADDLE_HEIGHT, "white");
+            colorRect(0,paddle1Y,PADDLE_WIDTH, PADDLE_HEIGHT, "white");
+            //right paddle
+            colorRect(canvas.width-PADDLE_WIDTH,paddle2Y,PADDLE_WIDTH, PADDLE_HEIGHT, "white");
             //ball
             colorCircle(ballX, ballY, BALL_RADIUS, "white")
         }
