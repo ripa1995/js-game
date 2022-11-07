@@ -15,6 +15,9 @@
 
         var player1Score = 0;
         var player2Score = 0;
+        const WINNING_SCORE = 3;
+
+        var showingWinScreen = false;
 
         function calculateMousePos(evt) {
             var rect = canvas.getBoundingClientRect();
@@ -27,6 +30,14 @@
             };
         }
 
+        function handleMouseClick(evt) {
+            if (showingWinScreen) {
+                player1Score = 0;
+                player2Score= 0;
+                showingWinScreen = false;
+            }
+        }
+
         window.onload = function() {
             canvas = document.getElementById("gameCanvas");
             canvasContext = canvas.getContext("2d");
@@ -37,6 +48,8 @@
                 drawEverything();
             }, 1000/framesPerSecond);
 
+            canvas.addEventListener("mousedown", handleMouseClick)
+
             canvas.addEventListener("mousemove",
                 function(evt) {
                     var mousePos = calculateMousePos(evt);
@@ -46,7 +59,11 @@
         }   
 
         function ballReset() {
+            if (player1Score>=WINNING_SCORE || player2Score>=WINNING_SCORE) {
+                showingWinScreen = true;
+            }
             ballSpeedX = -ballSpeedX
+            ballSpeedY = 2
             ballX = canvas.width/2;
             ballY = canvas.height/2;
         }
@@ -54,13 +71,17 @@
         function computerMovement() {
             var paddle2YCenter = paddle2Y+(PADDLE_HEIGHT/2);
             if (paddle2YCenter<ballY-(PADDLE_HEIGHT/4)) {
-                paddle2Y += 1
+                paddle2Y += 5
             } else if  (paddle2YCenter>ballY+(PADDLE_HEIGHT/4)) {
-                paddle2Y -= 1
+                paddle2Y -= 5
             }
         }
 
         function moveEverything() {
+            if (showingWinScreen) {
+                return;
+            }
+
             computerMovement();
 
             ballX += ballSpeedX
@@ -68,17 +89,23 @@
             if (ballX < BALL_RADIUS/2) {
                 if (ballY>paddle1Y && ballY<paddle1Y+PADDLE_HEIGHT)  {
                     ballSpeedX = -ballSpeedX
+                    var deltaY = ballY - (paddle1Y+PADDLE_HEIGHT/2)
+                    ballSpeedY = deltaY *0.35
                 } else {
-                    ballReset()
+                    //must be before ball reset
                     player2Score++
+                    ballReset()
                 }
             }
             if (ballX > (canvas.width - BALL_RADIUS/2)) {
                 if (ballY>paddle2Y && ballY<paddle2Y+PADDLE_HEIGHT) {
                     ballSpeedX = -ballSpeedX
+                    var deltaY = ballY - (paddle2Y+PADDLE_HEIGHT/2)
+                    ballSpeedY = deltaY *0.35
                 } else {
-                    ballReset()
+                    //must be before ball reset
                     player1Score++
+                    ballReset()
                 }
             }
             if (ballY > (canvas.height  - BALL_RADIUS/2) || ballY < BALL_RADIUS/2) {
@@ -86,9 +113,28 @@
             }
         }
 
+        function drawNet() {
+            for (var i=10; i<canvas.height; i+=40) {
+                colorRect(canvas.width/2-1,i,2,20,"white")
+            }
+        }
+
         function drawEverything() { 
             //field
             colorRect(0,0,canvas.width, canvas.height,"black");
+            
+            if (showingWinScreen) {
+                canvasContext.fillStyle = "white"
+                if (player1Score>= WINNING_SCORE){
+                    canvasContext.fillText("Player 1 won!", canvas.width/2 - 50,canvas.height/2-50)
+                } else if (player2Score>= WINNING_SCORE) {
+                    canvasContext.fillText("Player 2 won!", canvas.width/2 - 50,canvas.height/2-50)
+                }
+                canvasContext.fillText("Click to continue", canvas.width/2 - 50,canvas.height/2)
+                return;
+            }
+            //net
+            drawNet()
             //left paddle
             colorRect(0,paddle1Y,PADDLE_WIDTH, PADDLE_HEIGHT, "white");
             //right paddle
