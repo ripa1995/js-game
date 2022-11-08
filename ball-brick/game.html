@@ -23,11 +23,13 @@
 
     var paddleX = 400;
 
-    const BRICK_W = 100;
-    const BRICK_H = 50;
-    const BRICK_COUNT = 8;
+    const BRICK_W = 80;
+    const BRICK_H = 20;
+    const BRICK_GAP = 2;
+    const BRICK_COLS = 10;
+    const BRICK_ROWS = 14;
 
-    var brickGrid = new Array(BRICK_COUNT);
+    var brickGrid = new Array(BRICK_COLS * BRICK_ROWS);
 
     function updateMousePos(evt) {
         var rect = canvas.getBoundingClientRect();
@@ -62,8 +64,13 @@
     }
 
     function brickReset() {
-        for(var i=0;i<BRICK_COUNT;i++){
-            brickGrid[i]=true;
+        for (var i = 0; i < BRICK_COLS * BRICK_ROWS; i++) {
+            // if (Math.random() < 0.5) {
+            //     brickGrid[i] = true;
+            // } else {
+            //     brickGrid[i] = false;
+            // }
+            brickGrid[i] = true;
         }
     }
 
@@ -84,6 +91,18 @@
             ballReset()
         }
 
+        var ballBrickCol = Math.floor(ballX / BRICK_W);
+        var ballBrickRow = Math.floor(ballY / BRICK_H);
+        var brickIndexUnderBall = rowColToArrayIndex(ballBrickCol, ballBrickRow)
+
+        if (ballBrickCol >= 0 && ballBrickCol < BRICK_COLS &&
+        ballBrickRow >= 0 && ballBrickRow < BRICK_ROWS) {
+            if (brickGrid[brickIndexUnderBall]) { 
+                brickGrid[brickIndexUnderBall] = false;
+                ballSpeedY *= -1
+            }
+        }
+
         var paddleTopEdgeY = canvas.height - PADDLE_DIST_FROM_EDGE
         var paddleBottomEdgeY = paddleTopEdgeY + PADDLE_THICKNESS
         var paddleLeftEdgeX = paddleX
@@ -102,10 +121,17 @@
         }
     }
 
+    function rowColToArrayIndex(col, row) {
+        return col + BRICK_COLS * row
+    }
+
     function drawBricks() {
-        for(var i=0;i<BRICK_COUNT;i++) {
-            if (brickGrid[i]) {
-                colorRect(BRICK_W*i, 0, BRICK_W - 2, BRICK_H, "blue")
+        for (var eachRow = 0; eachRow < BRICK_ROWS; eachRow++) {
+            for (var eachCol = 0; eachCol < BRICK_COLS; eachCol++) {
+                var brickIndex = rowColToArrayIndex(eachCol, eachRow);
+                if (brickGrid[brickIndex]) {
+                    colorRect(BRICK_W * eachCol, BRICK_H * eachRow, BRICK_W - BRICK_GAP, BRICK_H - BRICK_GAP, "blue")
+                }
             }
         }
     }
@@ -119,8 +145,6 @@
         colorRect(paddleX, canvas.height - PADDLE_DIST_FROM_EDGE, PADDLE_WIDTH, PADDLE_THICKNESS, "white")
 
         drawBricks()
-
-        colorText(mouseX + "," + mouseY, mouseX, mouseY, "yellow")
     }
 
     function colorRect(topLeftX, topLeftY, boxWidth, boxHeight, fillColor) {
