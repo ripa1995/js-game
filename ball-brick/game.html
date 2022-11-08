@@ -24,10 +24,10 @@
     var paddleX = 400;
 
     const BRICK_W = 80;
-    const BRICK_H = 20;
+    const BRICK_H = 40;
     const BRICK_GAP = 2;
     const BRICK_COLS = 10;
-    const BRICK_ROWS = 14;
+    const BRICK_ROWS = 7;
 
     var brickGrid = new Array(BRICK_COLS * BRICK_ROWS);
 
@@ -39,6 +39,12 @@
         mouseY = evt.clientY - rect.top - root.scrollTop;
 
         paddleX = mouseX - PADDLE_WIDTH / 2;
+
+        //Cheat to control the ball with mouse
+        ballX = mouseX
+        ballY = mouseY
+        ballSpeedX = 4;
+        ballSpeedY = -4
     }
 
     window.onload = function () {
@@ -74,7 +80,7 @@
         }
     }
 
-    function moveAll() {
+    function ballMove() {
         ballX += ballSpeedX
         ballY += ballSpeedY
 
@@ -90,7 +96,9 @@
         if (ballY > canvas.height) { //bottom
             ballReset()
         }
+    }
 
+    function ballBrickHandling() {
         var ballBrickCol = Math.floor(ballX / BRICK_W);
         var ballBrickRow = Math.floor(ballY / BRICK_H);
         var brickIndexUnderBall = rowColToArrayIndex(ballBrickCol, ballBrickRow)
@@ -99,10 +107,37 @@
         ballBrickRow >= 0 && ballBrickRow < BRICK_ROWS) {
             if (brickGrid[brickIndexUnderBall]) { 
                 brickGrid[brickIndexUnderBall] = false;
-                ballSpeedY *= -1
+
+                var prevBallX = ballX - ballSpeedX;
+                var prevBallY = ballY - ballSpeedY;
+                var prevBallBrickCol = Math.floor(prevBallX / BRICK_W);
+                var prevBallBrickRow = Math.floor(prevBallY / BRICK_H);
+
+                var bothTestsFailed = true
+
+                if (prevBallBrickCol != ballBrickCol) {
+                    var adjBrickSide = rowColToArrayIndex(prevBallBrickCol, ballBrickRow)
+                    if (!brickGrid[adjBrickSide]) {
+                        ballSpeedX *= -1
+                        bothTestsFailed = false
+                    }
+                }
+                if (prevBallBrickRow != ballBrickRow) {
+                    var adjBrickSide = rowColToArrayIndex(ballBrickCol, prevBallBrickRow)
+                    if (!brickGrid[adjBrickSide]) {
+                        ballSpeedY *= -1
+                        bothTestsFailed = false
+                    }
+                }
+                if (bothTestsFailed) {
+                    ballSpeedX *= -1
+                    ballSpeedY *= -1
+                }
             }
         }
+    }
 
+    function ballPaddleHandling() {
         var paddleTopEdgeY = canvas.height - PADDLE_DIST_FROM_EDGE
         var paddleBottomEdgeY = paddleTopEdgeY + PADDLE_THICKNESS
         var paddleLeftEdgeX = paddleX
@@ -119,6 +154,14 @@
             var ballDistFromPaddleCenterX = ballX - centerOfPaddleX
             ballSpeedX = ballDistFromPaddleCenterX * 0.35
         }
+    }
+
+    function moveAll() {
+        ballMove()        
+        
+        ballBrickHandling()
+        
+        ballPaddleHandling()
     }
 
     function rowColToArrayIndex(col, row) {
