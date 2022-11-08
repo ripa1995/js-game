@@ -8,9 +8,6 @@ const TRACK_GAP = 2;
 const TRACK_COLS = 20;
 const TRACK_ROWS = 15;
 
-var roadPic = document.createElement("img");
-var wallPic = document.createElement("img");
-
 var trackGrid = [
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
@@ -28,11 +25,6 @@ var trackGrid = [
     1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 ];
-
-function trackLoadImages() {
-    roadPic.src = "track_road.png";
-    wallPic.src = "track_wall.png"
-}
 
 function isWallAtColRow(col, row) {
     if (col >= 0 && col < TRACK_COLS &&
