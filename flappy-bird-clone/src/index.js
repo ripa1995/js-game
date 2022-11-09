@@ -10,8 +10,9 @@ const CONFIG = {
     //Arcade physics plugin, manages physics simulation
     default: 'arcade',
     arcade: {
+      debug: true,
       gravity: {
-        y: 200 //apply gravity to all objects in the scene
+       // y: 200 //apply gravity to all objects in the scene
       }
     }
   },
@@ -23,6 +24,11 @@ const CONFIG = {
   }
 }
 
+const VELOCITY = 200;
+
+let bird = null;
+let totalDelta = null;
+
 //Loading assets, such as images, music, animations, ...
 function preload() {
   //this context -- scene
@@ -30,9 +36,6 @@ function preload() {
   this.load.image('sky', './assets/sky.png')
   this.load.image('bird', './assets/bird.png')
 }
-
-let bird = null;
-let totalDelta = null;
 
 //Initialising the app
 function create() {
@@ -48,24 +51,23 @@ function create() {
   //add gravity, it increases body velocity
   //Acceleration due to gravity (specific to this Body), in pixels per second squared. Total gravity is the sum of this vector and the simulation's gravity.
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#gravity
-  bird.body.gravity.y = 200; //px per seconds of accelleration. Sums up to scene gravity, does not replace it.
+  //bird.body.gravity.y = 200; //px per seconds of accelleration. Sums up to scene gravity, does not replace it.
+  
   //add velocity -- affected by gravity as well
   //The Body's velocity, in pixels per second
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
-  bird.body.velocity.x = 200;
+  bird.body.velocity.x = VELOCITY;
 }
 
 //default: 60fps i.e. update executed 60 times per second
 function update(time /* ms time since first update */, delta /* ms delta time since last update*/) {
-  // console.log(bird.body.velocity.x) //stay constant, since there is no X gravity
-  // console.log(bird.body.velocity.y) //increases due to Y gravity
-  totalDelta += delta;
-  if (totalDelta >= 1000) {
-    console.log(bird.body.velocity.y);
-    totalDelta = 0;
-  } else {
-    return;
+  if (bird.x <= 0) {
+    bird.body.velocity.x = VELOCITY;
+  }  
+  if (bird.x >= CONFIG.width - bird.width) {
+    bird.body.velocity.x = -VELOCITY;
   }
+    
 }
 
 
