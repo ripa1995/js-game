@@ -27,7 +27,7 @@ class PlayScene extends BaseScene {
         this.createPipes();
         this.createColliders();
         this.createScore();
-        this.createPauseButton();
+        this.createBackButton();
         this.handleInputs();
     }
 
@@ -86,8 +86,8 @@ class PlayScene extends BaseScene {
         this.add.text(16, 8 + this.scoreText.getBounds().bottom, `Best Score: ${BEST_SCORE || 0}`, { fontSize: '16px', color: 'black' });
     }
 
-    createPauseButton() {
-        const PAUSE_BUTTON = this.add.image(this.config.width-10, this.config.height-10, 'pause')
+    createBackButton() {
+        const PAUSE_BUTTON = this.add.image(this.config.width - 10, this.config.height - 10, 'pause')
             .setScale(1.5)
             .setInteractive()
             .setOrigin(1);
