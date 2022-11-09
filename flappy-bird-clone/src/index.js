@@ -12,7 +12,7 @@ const CONFIG = {
     arcade: {
       debug: true,
       gravity: {
-       // y: 200 //apply gravity to all objects in the scene
+        y: 200 //apply gravity to all objects in the scene
       }
     }
   },
@@ -28,6 +28,7 @@ const VELOCITY = 200;
 
 let bird = null;
 let totalDelta = null;
+let flapVelocity = 250;
 
 //Loading assets, such as images, music, animations, ...
 function preload() {
@@ -57,6 +58,11 @@ function create() {
   //The Body's velocity, in pixels per second
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
   bird.body.velocity.x = VELOCITY;
+
+  //add listener on mouse and space click
+  //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#input__anchor
+  this.input.on('pointerdown', flap)
+  this.input.keyboard.on('keydown_SPACE', flap)
 }
 
 //default: 60fps i.e. update executed 60 times per second
@@ -68,6 +74,10 @@ function update(time /* ms time since first update */, delta /* ms delta time si
     bird.body.velocity.x = -VELOCITY;
   }
     
+}
+
+function flap() {
+  bird.body.velocity.y -= flapVelocity;
 }
 
 
