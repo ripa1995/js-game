@@ -8,7 +8,12 @@ const CONFIG = {
   height: 600,
   physics: {
     //Arcade physics plugin, manages physics simulation
-    default: 'arcade'
+    default: 'arcade',
+    arcade: {
+      gravity: {
+        y: 200 //apply gravity to all objects in the scene
+      }
+    }
   },
   //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html
   scene: {
@@ -27,6 +32,7 @@ function preload() {
 }
 
 let bird = null;
+let totalDelta = null;
 
 //Initialising the app
 function create() {
@@ -42,7 +48,7 @@ function create() {
   //add gravity, it increases body velocity
   //Acceleration due to gravity (specific to this Body), in pixels per second squared. Total gravity is the sum of this vector and the simulation's gravity.
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#gravity
-  bird.body.gravity.y = 200;
+  bird.body.gravity.y = 200; //px per seconds of accelleration. Sums up to scene gravity, does not replace it.
   //add velocity -- affected by gravity as well
   //The Body's velocity, in pixels per second
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
@@ -51,8 +57,15 @@ function create() {
 
 //default: 60fps i.e. update executed 60 times per second
 function update(time /* ms time since first update */, delta /* ms delta time since last update*/) {
-  console.log(bird.body.velocity.x) //stay constant, since there is no X gravity
-  console.log(bird.body.velocity.y) //increases due to Y gravity
+  // console.log(bird.body.velocity.x) //stay constant, since there is no X gravity
+  // console.log(bird.body.velocity.y) //increases due to Y gravity
+  totalDelta += delta;
+  if (totalDelta >= 1000) {
+    console.log(bird.body.velocity.y);
+    totalDelta = 0;
+  } else {
+    return;
+  }
 }
 
 
