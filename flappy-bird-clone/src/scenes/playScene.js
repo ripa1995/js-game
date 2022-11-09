@@ -14,7 +14,7 @@ class PlayScene extends Phaser.Scene {
         this.config = config;
         this.bird = null;
         this.pipes = null;
-        this.birdPosition = {x: this.config.width/10, y: this.config.height/2};
+        this.birdPosition = { x: this.config.width / 10, y: this.config.height / 2 };
     }
 
     //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.ScenePreloadCallback
@@ -32,6 +32,7 @@ class PlayScene extends Phaser.Scene {
         this.createBackground();
         this.createBird();
         this.createPipes();
+        this.createColliders();
         this.handleInputs();
     }
 
@@ -64,6 +65,8 @@ class PlayScene extends Phaser.Scene {
         //The Body's velocity, in pixels per second
         //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
         //bird.body.velocity.x = 100;
+
+        this.bird.setCollideWorldBounds(true);
     }
 
     createPipes() {
@@ -72,13 +75,22 @@ class PlayScene extends Phaser.Scene {
 
         for (let i = 0; i < PIPE_TO_RENDER; i++) {
             //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Group.html#create__anchor
-            const upperPipe = this.pipes.create(0,0, 'pipe').setOrigin(0, 1); //draw the image from bottom left corner
-            const lowerPipe = this.pipes.create(0, 0, 'pipe').setOrigin(0, 0); //draw the image from top left corner  
-        
+            const upperPipe = this.pipes.create(0, 0, 'pipe')
+                .setImmovable(true) //immovable property of a body. Whether this Body can be moved by collisions with another Body.
+                .setOrigin(0, 1); //draw the image from bottom left corner
+            const lowerPipe = this.pipes.create(0, 0, 'pipe')
+                .setImmovable(true)
+                .setOrigin(0, 0); //draw the image from top left corner  
+
             this.placePipe(upperPipe, lowerPipe)
         }
 
         this.pipes.setVelocityX(-200);
+    }
+
+    createColliders() {
+        //https://newdocs.phaser.io/docs/3.55.2/Phaser.Physics.Arcade.Factory#collider
+        this.physics.add.collider(this.bird, this.pipes, this.gameOver, null, this);
     }
 
     handleInputs() {
@@ -89,24 +101,24 @@ class PlayScene extends Phaser.Scene {
     }
 
     checkGameStatus() {
-        if (this.bird.y < 0 || this.bird.y > this.config.height) {
-            this.resetBird();
+        if (this.bird.getBounds().top <= 0 || this.bird.getBounds().bottom >= this.config.height) {
+            this.gameOver();
         }
     }
-  
+
     placePipe(uPipe, lPipe) {
         const rightMostPipeX = this.getRightMostPipe();
         let pipeVerticalDistance = Phaser.Math.Between(...PIPE_Y_DISTANCE_RANGE);
         let pipeVerticalPosition = Phaser.Math.Between(20, this.config.height - 20 - pipeVerticalDistance)
         let pipeHorizontalDistance = Phaser.Math.Between(...PIPE_X_DISTANCE_RANGE);
-    
+
         uPipe.x = rightMostPipeX + pipeHorizontalDistance;
         uPipe.y = pipeVerticalPosition;
-    
+
         lPipe.x = uPipe.x;
         lPipe.y = uPipe.y + pipeVerticalDistance;
     }
-  
+
     recyclePipes() {
         let tempPipes = [];
         this.pipes.getChildren().forEach(pipe => {
@@ -115,33 +127,44 @@ class PlayScene extends Phaser.Scene {
                 //get upper and lower pipe that are out of the bounds
                 tempPipes.push(pipe);
                 if (tempPipes.length == 2) {
-                this.placePipe(...tempPipes)
-                tempPipes = [];
+                    this.placePipe(...tempPipes)
+                    tempPipes = [];
                 }
             }
         })
     }
-  
+
     getRightMostPipe() {
         let rightMostPipeX = 0;
 
         this.pipes.getChildren().forEach(pipe => {
             rightMostPipeX = Math.max(pipe.x, rightMostPipeX);
         });
-    
+
         return rightMostPipeX;
     }
-  
-    resetBird() {
-        this.bird.y = this.birdPosition.y;
-        this.bird.x = this.birdPosition.x;
-        this.bird.body.velocity.y = 0;
+
+    gameOver() {
+        //https://newdocs.phaser.io/docs/3.55.2/Phaser.Physics.Arcade.ArcadePhysics#pause
+        //pause the simulation
+        this.physics.pause();
+        this.bird.setTint(0xff0000);
+        this.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                //https://newdocs.phaser.io/docs/3.55.2/Phaser.Scene#scene
+                //https://newdocs.phaser.io/docs/3.55.2/Phaser.Scenes.ScenePlugin#restart
+                //restart this scene
+                this.scene.restart();
+            },
+            loop: false
+        })
     }
-  
+
     flap() {
         this.bird.body.velocity.y -= FLAP_VELOCITY;
     }
-  
+
 }
 
 export default PlayScene;
