@@ -1,28 +1,34 @@
+import Phaser from 'phaser';
 
-import Phaser from "phaser";
-
-const config = {
+//https://photonstorm.github.io/phaser3-docs/Phaser.Types.Core.html#.GameConfig
+const CONFIG = {
+  //WebGL (Web graphics library) JS Api for rendering 2D/3D graphics
   type: Phaser.AUTO,
   width: 800,
   height: 600,
   physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 200 }
-    }
+    //Arcade physics plugin, manages physics simulation
+    default: 'arcade'
   },
+  //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html
   scene: {
-    preload: preload,
-    create: create
+    preload, //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.ScenePreloadCallback
+    create //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.SceneCreateCallback
   }
-};
-
-new Phaser.Game(config);
-
-function preload () {
-  this.load.image('sky', 'assets/sky.png');
 }
 
-function create () {
-  this.add.image(400, 300, 'sky');
+//Loading assets, such as images, music, animations, ...
+function preload() {
+  //this context -- scene
+  //contains functions and properties we can use
+  this.load.image('sky', './assets/sky.png')
 }
+
+//Initialising the app
+function create() {
+  //x,y,key of the image
+  //x,y will be image center coordinates, hence giving 0,0 will print only right bottom quarter of the image.
+  this.add.image(CONFIG.width/2,CONFIG.height/2, 'sky');
+}
+
+new Phaser.Game(CONFIG);
