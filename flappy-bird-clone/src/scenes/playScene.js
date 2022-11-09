@@ -73,6 +73,9 @@ class PlayScene extends BaseScene {
         //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
         //bird.body.velocity.x = 100;
 
+        
+        this.bird.setBodySize(this.bird.width, this.bird.height - 7);
+
         this.bird.setCollideWorldBounds(true);
     }
 
