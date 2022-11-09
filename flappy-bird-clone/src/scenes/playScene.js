@@ -46,20 +46,7 @@ class PlayScene extends BaseScene {
         this.createPauseButton();
         this.handleInputs();
         this.listenToEvents();
-
-        this.anims.create({
-            key: 'fly',
-            frames: this.anims.generateFrameNumbers('bird', {
-                start: 8,
-                end: 15
-            }),
-            //24 fps by default
-            frameRate: 8,
-            //repeat infinitely
-            repeat: -1
-        });
-
-        this.bird.play('fly');
+        this.initAnimations();
     }
 
     //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#update
@@ -161,6 +148,22 @@ class PlayScene extends BaseScene {
                 loop: true
             })
         })
+    }
+
+    initAnimations() {
+        this.anims.create({
+            key: 'fly',
+            frames: this.anims.generateFrameNumbers('bird', {
+                start: 8,
+                end: 15
+            }),
+            //24 fps by default
+            frameRate: 8,
+            //repeat infinitely
+            repeat: -1
+        });
+
+        this.bird.play('fly');
     }
 
     countDown() {
