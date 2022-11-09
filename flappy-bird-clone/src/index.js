@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import Phaser, { UP } from 'phaser';
 
 //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Core.html#.GameConfig
 const CONFIG = {
@@ -24,19 +24,19 @@ const CONFIG = {
   }
 }
 
-const X_VELOCITY = 200;
+const Y_GRAVITY = 400;
 const DEFAULT_Y_VELOCITY = 0;
 const DEFAULT_X_POS = CONFIG.width / 10;
 const DEFAULT_Y_POS = CONFIG.height / 2;
+const PIPE_Y_DISTANCE_RANGE = [150, 250];
+const PIPE_TO_RENDER = 4;
+const PIPE_X_DISTANCE_RANGE = [400, 600];
 
 let bird = null;
-let upperPipe = null;
-let lowerPipe = null;
+let pipeHorizontalDistance = 0;
 let flapVelocity = 250;
+let pipes = null;
 
-const PIPE_Y_DISTANCE_RANGE = [150, 250];
-let pipeVerticalDistance = Phaser.Math.Between(...PIPE_Y_DISTANCE_RANGE);
-let pipeVerticalPosition = Phaser.Math.Between(20, CONFIG.height-20-pipeVerticalDistance)
 //Loading assets, such as images, music, animations, ...
 function preload() {
   //this context -- scene
@@ -60,15 +60,25 @@ function create() {
   //add gravity, it increases body velocity
   //Acceleration due to gravity (specific to this Body), in pixels per second squared. Total gravity is the sum of this vector and the simulation's gravity.
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#gravity
-  bird.body.gravity.y = X_VELOCITY; //px per seconds of accelleration. Sums up to scene gravity, does not replace it.
+  bird.body.gravity.y = Y_GRAVITY; //px per seconds of accelleration. Sums up to scene gravity, does not replace it.
 
   //add velocity -- affected by gravity as well
   //The Body's velocity, in pixels per second
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
-  bird.body.velocity.x = X_VELOCITY;
+  //bird.body.velocity.x = 100;
 
-  upperPipe = this.physics.add.sprite(600, pipeVerticalPosition, 'pipe').setOrigin(0, 1); //draw the image from bottom left corner
-  lowerPipe = this.physics.add.sprite(600, upperPipe.y + pipeVerticalDistance, 'pipe').setOrigin(0, 0); //draw the image from top left corner
+  //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectFactory.html#group__anchor
+  pipes = this.physics.add.group();
+
+  for (let i = 0; i < PIPE_TO_RENDER; i++) {
+    //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Group.html#create__anchor
+    const upperPipe = pipes.create(0,0, 'pipe').setOrigin(0, 1); //draw the image from bottom left corner
+    const lowerPipe = pipes.create(0, 0, 'pipe').setOrigin(0, 0); //draw the image from top left corner  
+  
+    placePipe(upperPipe, lowerPipe)
+  }
+
+  pipes.setVelocityX(-200);
 
   //add listener on mouse and space click
   //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#input__anchor
@@ -81,19 +91,51 @@ function update(time /* ms time since first update */, delta /* ms delta time si
   if (bird.y < 0 || bird.y > CONFIG.height) {
     resetBird();
   }
-  if (bird.x <= 0) {
-    bird.body.velocity.x = X_VELOCITY;
-  }
-  if (bird.x >= CONFIG.width - bird.width) {
-    bird.body.velocity.x = -X_VELOCITY;
-  }
+  recyclePipes()
+}
 
+function placePipe(uPipe, lPipe) {
+  const rightMostPipeX = getRightMostPipe();
+  let pipeVerticalDistance = Phaser.Math.Between(...PIPE_Y_DISTANCE_RANGE);
+  let pipeVerticalPosition = Phaser.Math.Between(20, CONFIG.height - 20 - pipeVerticalDistance)
+  let pipeHorizontalDistance = Phaser.Math.Between(...PIPE_X_DISTANCE_RANGE);
+
+  uPipe.x = rightMostPipeX + pipeHorizontalDistance;
+  uPipe.y = pipeVerticalPosition;
+
+  lPipe.x = uPipe.x;
+  lPipe.y = uPipe.y + pipeVerticalDistance;
+}
+
+function recyclePipes() {
+  let tempPipes = [];
+  pipes.getChildren().forEach(pipe => {
+    if (pipe.getBounds().right <= 0) {
+      //recycle pipe
+      //get upper and lower pipe that are out of the bounds
+      tempPipes.push(pipe);
+      if (tempPipes.length == 2) {
+        placePipe(...tempPipes)
+        tempPipes = [];
+      }
+    }
+  })
+}
+
+function getRightMostPipe() {
+  let rightMostPipeX = 0;
+  
+
+  pipes.getChildren().forEach(pipe => {
+    rightMostPipeX = Math.max(pipe.x, rightMostPipeX);
+  });
+
+  return rightMostPipeX;
 }
 
 function resetBird() {
   bird.y = DEFAULT_Y_POS;
   bird.x = DEFAULT_X_POS;
-  bird.body.velocity.x = X_VELOCITY;
   bird.body.velocity.y = DEFAULT_Y_VELOCITY;
 }
 
