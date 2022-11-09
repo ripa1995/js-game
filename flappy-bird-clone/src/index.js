@@ -22,7 +22,10 @@ function preload() {
   //this context -- scene
   //contains functions and properties we can use
   this.load.image('sky', './assets/sky.png')
+  this.load.image('bird', './assets/bird.png')
 }
+
+let bird = null;
 
 //Initialising the app
 function create() {
@@ -32,6 +35,9 @@ function create() {
   //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectFactory.html#image__anchor
   //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Image.html#setOrigin__anchor
   this.add.image(0,0, 'sky').setOrigin(0,0);
+  //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectFactory.html#sprite__anchor
+  bird = this.add.sprite(CONFIG.width/10,CONFIG.height/2, 'bird').setOrigin(0); //if y is missing defaults to X
+  debugger
 }
 
 new Phaser.Game(CONFIG);
