@@ -11,9 +11,9 @@ const CONFIG = {
     default: 'arcade',
     arcade: {
       debug: true,
-      gravity: {
-        y: 200 //apply gravity to all objects in the scene
-      }
+      // gravity: {
+      //   y: 200 //apply gravity to all objects in the scene
+      // }
     }
   },
   //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html
@@ -30,15 +30,20 @@ const DEFAULT_X_POS = CONFIG.width / 10;
 const DEFAULT_Y_POS = CONFIG.height / 2;
 
 let bird = null;
-let totalDelta = null;
+let upperPipe = null;
+let lowerPipe = null;
 let flapVelocity = 250;
 
+const PIPE_Y_DISTANCE_RANGE = [150, 250];
+let pipeVerticalDistance = Phaser.Math.Between(...PIPE_Y_DISTANCE_RANGE);
+let pipeVerticalPosition = Phaser.Math.Between(20, CONFIG.height-20-pipeVerticalDistance)
 //Loading assets, such as images, music, animations, ...
 function preload() {
   //this context -- scene
   //contains functions and properties we can use
   this.load.image('sky', './assets/sky.png')
   this.load.image('bird', './assets/bird.png')
+  this.load.image('pipe', './assets/pipe.png')
 }
 
 //Initialising the app
@@ -55,12 +60,15 @@ function create() {
   //add gravity, it increases body velocity
   //Acceleration due to gravity (specific to this Body), in pixels per second squared. Total gravity is the sum of this vector and the simulation's gravity.
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#gravity
-  //bird.body.gravity.y = 200; //px per seconds of accelleration. Sums up to scene gravity, does not replace it.
+  bird.body.gravity.y = X_VELOCITY; //px per seconds of accelleration. Sums up to scene gravity, does not replace it.
 
   //add velocity -- affected by gravity as well
   //The Body's velocity, in pixels per second
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
   bird.body.velocity.x = X_VELOCITY;
+
+  upperPipe = this.physics.add.sprite(600, pipeVerticalPosition, 'pipe').setOrigin(0, 1); //draw the image from bottom left corner
+  lowerPipe = this.physics.add.sprite(600, upperPipe.y + pipeVerticalDistance, 'pipe').setOrigin(0, 0); //draw the image from top left corner
 
   //add listener on mouse and space click
   //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#input__anchor
