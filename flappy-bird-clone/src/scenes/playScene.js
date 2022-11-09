@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 
 
-const Y_GRAVITY = 400;
-const FLAP_VELOCITY = 200;
+const Y_GRAVITY = 600;
+const FLAP_VELOCITY = 350;
 const PIPE_Y_DISTANCE_RANGE = [150, 250];
 const PIPE_TO_RENDER = 4;
 const PIPE_X_DISTANCE_RANGE = [400, 600];
@@ -15,6 +15,9 @@ class PlayScene extends Phaser.Scene {
         this.bird = null;
         this.pipes = null;
         this.birdPosition = { x: this.config.width / 10, y: this.config.height / 2 };
+
+        this.score = 0;
+        this.scoreText = "";
     }
 
     //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.ScenePreloadCallback
@@ -33,6 +36,7 @@ class PlayScene extends Phaser.Scene {
         this.createBird();
         this.createPipes();
         this.createColliders();
+        this.createScore();
         this.handleInputs();
     }
 
@@ -93,6 +97,13 @@ class PlayScene extends Phaser.Scene {
         this.physics.add.collider(this.bird, this.pipes, this.gameOver, null, this);
     }
 
+    createScore() {
+        this.score = 0;
+        this.scoreText = this.add.text(16, 16, `Score: ${this.score}`, { fontSize: '32px', color: 'black' });
+        const BEST_SCORE = localStorage.getItem("bestScore");
+        this.add.text(16, 8 + this.scoreText.getBounds().bottom, `Best Score: ${BEST_SCORE || 0}`, { fontSize: '16px', color: 'black' });
+    }
+
     handleInputs() {
         //add listener on mouse and space click
         //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#input__anchor
@@ -127,7 +138,9 @@ class PlayScene extends Phaser.Scene {
                 //get upper and lower pipe that are out of the bounds
                 tempPipes.push(pipe);
                 if (tempPipes.length == 2) {
-                    this.placePipe(...tempPipes)
+                    this.placePipe(...tempPipes);
+                    this.increaseScore();
+                    this.saveBestScore();
                     tempPipes = [];
                 }
             }
@@ -144,11 +157,23 @@ class PlayScene extends Phaser.Scene {
         return rightMostPipeX;
     }
 
+    saveBestScore() {
+        const BEST_SCORE_TEXT = localStorage.getItem('bestScore');
+        const BEST_SCORE = BEST_SCORE_TEXT && parseInt(BEST_SCORE_TEXT, 10);
+
+        if (!BEST_SCORE || this.score > BEST_SCORE) {
+            localStorage.setItem("bestScore", this.score);
+        }
+    }
+
     gameOver() {
         //https://newdocs.phaser.io/docs/3.55.2/Phaser.Physics.Arcade.ArcadePhysics#pause
         //pause the simulation
         this.physics.pause();
         this.bird.setTint(0xff0000);
+
+        this.saveBestScore();
+
         this.time.addEvent({
             delay: 1000,
             callback: () => {
@@ -163,6 +188,11 @@ class PlayScene extends Phaser.Scene {
 
     flap() {
         this.bird.body.velocity.y -= FLAP_VELOCITY;
+    }
+
+    increaseScore() {
+        this.score++;
+        this.scoreText.setText(`Score: ${this.score}`);
     }
 
 }
