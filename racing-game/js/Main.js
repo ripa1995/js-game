@@ -1,5 +1,8 @@
 var canvas, canvasContext;
 
+var blueCar = new carClass();
+var greenCar = new carClass();
+
 function updateMousePos(evt) {
     var rect = canvas.getBoundingClientRect();
     var root = document.documentElement;
@@ -17,6 +20,9 @@ function setUpInput() {
 
     document.addEventListener("keydown", keyPressed)
     document.addEventListener("keyup", keyReleased)
+
+    greenCar.setupInput(KEY_W, KEY_D, KEY_S, KEY_A);
+    blueCar.setupInput(KEY_UP_ARROW, KEY_RIGHT_ARROW, KEY_DOWN_ARROW, KEY_LEFT_ARROW);
 }
 
 window.onload = function () {
@@ -36,7 +42,8 @@ function imageLoadingDoneSoStartGame() {
 
     setUpInput()
 
-    carReset()
+    blueCar.reset(carPic)
+    greenCar.reset(otherCarPic)
 }
 
 function updateAll() {
@@ -45,13 +52,12 @@ function updateAll() {
 }
 
 function moveAll() {
-    carMove()
-
-    carTrackHandling()
+    blueCar.move()
+    greenCar.move()
 }
 
 function drawAll() {
     drawTracks()
-    drawCar()
-
+    blueCar.draw()
+    greenCar.draw()
 }
