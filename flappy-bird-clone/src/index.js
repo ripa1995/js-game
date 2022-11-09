@@ -24,7 +24,10 @@ const CONFIG = {
   }
 }
 
-const VELOCITY = 200;
+const X_VELOCITY = 200;
+const DEFAULT_Y_VELOCITY = 0;
+const DEFAULT_X_POS = CONFIG.width / 10;
+const DEFAULT_Y_POS = CONFIG.height / 2;
 
 let bird = null;
 let totalDelta = null;
@@ -45,19 +48,19 @@ function create() {
   //with .setOrigin we change the origin of the image. where 0,0 is top left corner of the image, 1,1 is bottom right
   //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectFactory.html#image__anchor
   //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Image.html#setOrigin__anchor
-  this.add.image(0,0, 'sky').setOrigin(0,0);
+  this.add.image(0, 0, 'sky').setOrigin(0, 0);
   //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectFactory.html#sprite__anchor
   //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Sprite.html
-  bird = this.physics.add.sprite(CONFIG.width/10,CONFIG.height/2, 'bird').setOrigin(0); //if y is missing defaults to X
+  bird = this.physics.add.sprite(DEFAULT_X_POS, DEFAULT_Y_POS, 'bird').setOrigin(0); //if y is missing defaults to X
   //add gravity, it increases body velocity
   //Acceleration due to gravity (specific to this Body), in pixels per second squared. Total gravity is the sum of this vector and the simulation's gravity.
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#gravity
   //bird.body.gravity.y = 200; //px per seconds of accelleration. Sums up to scene gravity, does not replace it.
-  
+
   //add velocity -- affected by gravity as well
   //The Body's velocity, in pixels per second
   //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
-  bird.body.velocity.x = VELOCITY;
+  bird.body.velocity.x = X_VELOCITY;
 
   //add listener on mouse and space click
   //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#input__anchor
@@ -67,13 +70,23 @@ function create() {
 
 //default: 60fps i.e. update executed 60 times per second
 function update(time /* ms time since first update */, delta /* ms delta time since last update*/) {
-  if (bird.x <= 0) {
-    bird.body.velocity.x = VELOCITY;
-  }  
-  if (bird.x >= CONFIG.width - bird.width) {
-    bird.body.velocity.x = -VELOCITY;
+  if (bird.y < 0 || bird.y > CONFIG.height) {
+    resetBird();
   }
-    
+  if (bird.x <= 0) {
+    bird.body.velocity.x = X_VELOCITY;
+  }
+  if (bird.x >= CONFIG.width - bird.width) {
+    bird.body.velocity.x = -X_VELOCITY;
+  }
+
+}
+
+function resetBird() {
+  bird.y = DEFAULT_Y_POS;
+  bird.x = DEFAULT_X_POS;
+  bird.body.velocity.x = X_VELOCITY;
+  bird.body.velocity.y = DEFAULT_Y_VELOCITY;
 }
 
 function flap() {
