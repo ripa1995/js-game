@@ -13,7 +13,8 @@ const CONFIG = {
   //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html
   scene: {
     preload, //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.ScenePreloadCallback
-    create //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.SceneCreateCallback
+    create, //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.SceneCreateCallback
+    update //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#update
   }
 }
 
@@ -36,8 +37,23 @@ function create() {
   //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Image.html#setOrigin__anchor
   this.add.image(0,0, 'sky').setOrigin(0,0);
   //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectFactory.html#sprite__anchor
-  bird = this.add.sprite(CONFIG.width/10,CONFIG.height/2, 'bird').setOrigin(0); //if y is missing defaults to X
-  debugger
+  //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Sprite.html
+  bird = this.physics.add.sprite(CONFIG.width/10,CONFIG.height/2, 'bird').setOrigin(0); //if y is missing defaults to X
+  //add gravity, it increases body velocity
+  //Acceleration due to gravity (specific to this Body), in pixels per second squared. Total gravity is the sum of this vector and the simulation's gravity.
+  //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#gravity
+  bird.body.gravity.y = 200;
+  //add velocity -- affected by gravity as well
+  //The Body's velocity, in pixels per second
+  //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#velocity
+  bird.body.velocity.x = 200;
 }
+
+//default: 60fps i.e. update executed 60 times per second
+function update(time /* ms time since first update */, delta /* ms delta time since last update*/) {
+  console.log(bird.body.velocity.x) //stay constant, since there is no X gravity
+  console.log(bird.body.velocity.y) //increases due to Y gravity
+}
+
 
 new Phaser.Game(CONFIG);
