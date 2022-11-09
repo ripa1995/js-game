@@ -57,6 +57,6 @@ function moveAll() {
 }
 
 function drawAll() {
-    drawWorlds()
+    drawWorld()
     blueWarrior.draw()
 }

@@ -12,18 +12,18 @@ const WORLD_COLS = 16;
 const WORLD_ROWS = 12;
 
 var levelOne = [
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 
-    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 
-    1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0,
-    1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 5, 
-    1, 0, 0, 1, 1, 4, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 
-    1, 0, 0, 0, 1, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 0, 
-    1, 2, 0, 0, 1, 4, 4, 4, 4, 4, 4, 4, 4, 1, 0, 0,
-    1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 
-    1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-    1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
-    1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+    1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+    1, 5, 0, 4, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
+    1, 0, 0, 1, 5, 1, 5, 0, 1, 1, 1, 1, 0, 1, 1, 1,
+    1, 2, 0, 1, 5, 1, 5, 0, 4, 0, 4, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 5, 0, 1, 1, 1, 1, 1, 1, 0, 1,
+    1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 3, 0, 4, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 ];
 
 var worldGrid = [];
@@ -45,21 +45,38 @@ function warriorWorldHandling(whichWarrior, xMov, yMov) {
     if (warriorWorldCol >= 0 && warriorWorldCol < WORLD_COLS &&
         warriorWorldRow >= 0 && warriorWorldRow < WORLD_ROWS) {
         var tileHere = returnTileTypeAtColRow(warriorWorldCol, warriorWorldRow)
-        if (tileHere == WORLD_GOAL) {
-            console.log(whichWarrior.name + " wins");
-            loadLevel(levelOne)
-        } else if (tileHere != WORLD_GROUND) {
-            whichWarrior.x -= xMov;
-            whichWarrior.y -= yMov;
+        switch (tileHere) {
+            case WORLD_GOAL:
+                console.log(whichWarrior.name + " wins");
+                loadLevel(levelOne)
+                break;
+            case WORLD_KEY:
+                whichWarrior.keys++;
+                replaceTileWithGround(warriorWorldCol,warriorWorldRow)
+                break;
+            case WORLD_DOOR:
+                if (whichWarrior.keys > 0) {
+                    whichWarrior.keys--
+                    replaceTileWithGround(warriorWorldCol,warriorWorldRow)
+                    break;
+                }
+            case WORLD_WALL: 
+                whichWarrior.x -= xMov;
+                whichWarrior.y -= yMov; 
         }
     }
+}
+
+function replaceTileWithGround(col,row) {
+    var worldIndexUnderCoord = colRowToArrayIndex(col, row)
+    worldGrid[worldIndexUnderCoord]=WORLD_GROUND
 }
 
 function colRowToArrayIndex(col, row) {
     return col + WORLD_COLS * row
 }
 
-function drawWorlds() {
+function drawWorld() {
     var worldIndex = 0;
     var drawTileX = 0;
     var drawTileY = 0;
@@ -67,8 +84,8 @@ function drawWorlds() {
         for (var eachCol = 0; eachCol < WORLD_COLS; eachCol++) {
             var tileKindHere = worldGrid[worldIndex];
             var useImg = worldPics[tileKindHere];
-            if (tileKindHere == WORLD_KEY || tileKindHere == WORLD_DOOR || tileKindHere == WORLD_GOAL) {
-                canvasContext.drawImage(worldPics[WORLD_GROUND], drawTileX, drawTileY)    
+            if (isTileTransparent(tileKindHere)) {
+                canvasContext.drawImage(worldPics[WORLD_GROUND], drawTileX, drawTileY)
             }
             canvasContext.drawImage(useImg, drawTileX, drawTileY)
             drawTileX += WORLD_W
@@ -78,3 +95,8 @@ function drawWorlds() {
         drawTileX = 0;
     }
 }
+
+function isTileTransparent(tileKindHere) {
+    return tileKindHere == WORLD_KEY || tileKindHere == WORLD_DOOR || tileKindHere == WORLD_GOAL;
+}
+

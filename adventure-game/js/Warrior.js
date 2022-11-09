@@ -1,4 +1,4 @@
-const PLAYER_SPEED = 1;
+const PLAYER_SPEED = 10;
 
 class Warrior {
     constructor() {
@@ -7,6 +7,7 @@ class Warrior {
         this.y = 75;
         this.myWarriorPic;
         this.name = "untitled";
+        this.keys = 0;
 
         this.keyHeld_Up = false;
         this.keyHeld_Down = false;
@@ -28,6 +29,7 @@ class Warrior {
         this.reset = function (whichImage, warriorName) {
             this.myWarriorPic = whichImage;
             this.name = warriorName;
+            this.keys = 0;
             for (var eachRow = 0; eachRow < WORLD_ROWS; eachRow++) {
                 for (var eachCol = 0; eachCol < WORLD_COLS; eachCol++) {
                     var arrayIndex = colRowToArrayIndex(eachCol, eachRow);
