@@ -46,6 +46,20 @@ class PlayScene extends BaseScene {
         this.createPauseButton();
         this.handleInputs();
         this.listenToEvents();
+
+        this.anims.create({
+            key: 'fly',
+            frames: this.anims.generateFrameNumbers('bird', {
+                start: 8,
+                end: 15
+            }),
+            //24 fps by default
+            frameRate: 8,
+            //repeat infinitely
+            repeat: -1
+        });
+
+        this.bird.play('fly');
     }
 
     //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#update
@@ -58,7 +72,10 @@ class PlayScene extends BaseScene {
     createBird() {
         //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectFactory.html#sprite__anchor
         //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Sprite.html
-        this.bird = this.physics.add.sprite(this.birdPosition.x, this.birdPosition.y, 'bird').setOrigin(0); //if y is missing defaults to X
+        this.bird = this.physics.add.sprite(this.birdPosition.x, this.birdPosition.y, 'bird')
+            .setFlipX(true)
+            .setScale(3)
+            .setOrigin(0); //if y is missing defaults to X
         //add gravity, it increases body velocity
         //Acceleration due to gravity (specific to this Body), in pixels per second squared. Total gravity is the sum of this vector and the simulation's gravity.
         //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#gravity
