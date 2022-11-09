@@ -11,6 +11,10 @@ const SHARED_CONFIG = {
   height: HEIGHT
 }
 
+const SCENES = [PreloadScene, MenuScene, PlayScene];
+const createScene = Scene => new Scene(SHARED_CONFIG);
+const initScenes = () => SCENES.map(createScene);
+
 //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Core.html#.GameConfig
 const CONFIG = {
   //WebGL (Web graphics library) JS Api for rendering 2D/3D graphics
@@ -28,7 +32,7 @@ const CONFIG = {
     }
   },
   //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html
-  scene: [PreloadScene, new MenuScene(SHARED_CONFIG), new PlayScene(SHARED_CONFIG)]
+  scene: initScenes()
 }
 
 new Phaser.Game(CONFIG);
