@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
+import MenuScene from './scenes/menuScene';
 import PlayScene from './scenes/playScene';
+import PreloadScene from './scenes/preloadScene';
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -26,7 +28,7 @@ const CONFIG = {
     }
   },
   //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html
-  scene: [new PlayScene(SHARED_CONFIG)]
+  scene: [PreloadScene, new MenuScene(SHARED_CONFIG), new PlayScene(SHARED_CONFIG)]
 }
 
 new Phaser.Game(CONFIG);

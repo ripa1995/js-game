@@ -20,16 +20,6 @@ class PlayScene extends Phaser.Scene {
         this.scoreText = "";
     }
 
-    //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.ScenePreloadCallback
-    //Loading assets, such as images, music, animations, ...
-    preload() {
-        //this context -- scene
-        //contains functions and properties we can use
-        this.load.image('sky', './assets/sky.png')
-        this.load.image('bird', './assets/bird.png')
-        this.load.image('pipe', './assets/pipe.png')
-    }
-
     //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.SceneCreateCallback
     create() {
         this.createBackground();
@@ -37,6 +27,7 @@ class PlayScene extends Phaser.Scene {
         this.createPipes();
         this.createColliders();
         this.createScore();
+        this.createPauseButton();
         this.handleInputs();
     }
 
@@ -102,6 +93,17 @@ class PlayScene extends Phaser.Scene {
         this.scoreText = this.add.text(16, 16, `Score: ${this.score}`, { fontSize: '32px', color: 'black' });
         const BEST_SCORE = localStorage.getItem("bestScore");
         this.add.text(16, 8 + this.scoreText.getBounds().bottom, `Best Score: ${BEST_SCORE || 0}`, { fontSize: '16px', color: 'black' });
+    }
+
+    createPauseButton() {
+        const PAUSE_BUTTON = this.add.image(this.config.width-10, this.config.height-10, 'pause')
+            .setScale(1.5)
+            .setInteractive()
+            .setOrigin(1);
+        PAUSE_BUTTON.on('pointerdown', () => {
+            this.physics.pause();
+            this.scene.pause();
+        })
     }
 
     handleInputs() {
