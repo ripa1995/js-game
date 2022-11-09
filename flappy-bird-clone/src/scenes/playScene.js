@@ -4,9 +4,7 @@ import BaseScene from './baseScene';
 
 const Y_GRAVITY = 600;
 const FLAP_VELOCITY = 350;
-const PIPE_Y_DISTANCE_RANGE = [150, 250];
 const PIPE_TO_RENDER = 4;
-const PIPE_X_DISTANCE_RANGE = [400, 600];
 
 class PlayScene extends BaseScene {
 
@@ -14,10 +12,28 @@ class PlayScene extends BaseScene {
         super("play-scene", config)
         this.bird = null;
         this.pipes = null;
+        this.isPuased = false;
+
         this.birdPosition = { x: this.config.width / 10, y: this.config.height / 2 };
 
         this.score = 0;
         this.scoreText = "";
+
+        this.currentDifficulty = 'easy';
+        this.difficulties = {
+            'easy': {
+                pipeXDistanceRange: [300, 350],
+                pipeYDistanceRange: [150, 200]
+            },
+            'normal': {
+                pipeXDistanceRange: [280, 330],
+                pipeYDistanceRange: [120, 170]
+            },
+            'hard': {
+                pipeXDistanceRange: [250, 310],
+                pipeYDistanceRange: [90, 140]
+            }
+        }
     }
 
     //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.SceneCreateCallback
@@ -153,9 +169,9 @@ class PlayScene extends BaseScene {
 
     placePipe(uPipe, lPipe) {
         const rightMostPipeX = this.getRightMostPipe();
-        let pipeVerticalDistance = Phaser.Math.Between(...PIPE_Y_DISTANCE_RANGE);
+        let pipeVerticalDistance = Phaser.Math.Between(...this.difficulties[this.currentDifficulty].pipeYDistanceRange);
         let pipeVerticalPosition = Phaser.Math.Between(20, this.config.height - 20 - pipeVerticalDistance)
-        let pipeHorizontalDistance = Phaser.Math.Between(...PIPE_X_DISTANCE_RANGE);
+        let pipeHorizontalDistance = Phaser.Math.Between(...this.difficulties[this.currentDifficulty].pipeXDistanceRange);
 
         uPipe.x = rightMostPipeX + pipeHorizontalDistance;
         uPipe.y = pipeVerticalPosition;
@@ -175,10 +191,20 @@ class PlayScene extends BaseScene {
                     this.placePipe(...tempPipes);
                     this.increaseScore();
                     this.saveBestScore();
+                    this.increaseDifficulty();
                     tempPipes = [];
                 }
             }
         })
+    }
+
+    increaseDifficulty() {
+        if (this.score === 10) {
+            this.currentDifficulty = 'normal';
+        }
+        if (this.score === 30) {
+            this.currentDifficulty = 'hard';
+        }
     }
 
     getRightMostPipe() {
