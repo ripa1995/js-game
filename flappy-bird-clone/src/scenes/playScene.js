@@ -27,8 +27,9 @@ class PlayScene extends BaseScene {
         this.createPipes();
         this.createColliders();
         this.createScore();
-        this.createBackButton();
+        this.createPauseButton();
         this.handleInputs();
+        this.listenToEvents();
     }
 
     //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#update
@@ -86,14 +87,20 @@ class PlayScene extends BaseScene {
         this.add.text(16, 8 + this.scoreText.getBounds().bottom, `Best Score: ${BEST_SCORE || 0}`, { fontSize: '16px', color: 'black' });
     }
 
-    createBackButton() {
+    createPauseButton() {
+        this.isPaused = false;
         const PAUSE_BUTTON = this.add.image(this.config.width - 10, this.config.height - 10, 'pause')
             .setScale(1.5)
             .setInteractive()
             .setOrigin(1);
         PAUSE_BUTTON.on('pointerdown', () => {
+            this.isPaused = true;
+            this.countDownTimedEvent && this.countDownTimedEvent.remove();
+            this.countDownText && this.countDownText.setText('');
             this.physics.pause();
             this.scene.pause();
+            //launch, not like start, does not shutdown current scene
+            this.scene.launch('pause-scene')
         })
     }
 
@@ -102,6 +109,40 @@ class PlayScene extends BaseScene {
         //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#input__anchor
         this.input.on('pointerdown', this.flap, this)
         this.input.keyboard.on('keydown_SPACE', this.flap, this)
+    }
+
+    listenToEvents() {
+        if (this.pauseEvent) { return; }
+        //https://photonstorm.github.io/phaser3-docs/Phaser.Events.EventEmitter.html
+        //https://photonstorm.github.io/phaser3-docs/Phaser.Events.EventEmitter.html#on__anchor
+        this.pauseEvent = this.events.on('resume', () => {
+            this.initialTime = 3;
+            this.countDownText = this.add.text(...this.screenCenter, 'Fly in ' + this.initialTime, this.fontOptions)
+                .setOrigin(0.5);
+            //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#time__anchor
+            //https://photonstorm.github.io/phaser3-docs/Phaser.Time.Clock.html#addEvent__anchor
+            this.countDownTimedEvent = this.time.addEvent({
+                delay: 1000,
+                callback: this.countDown,
+                callbackScope: this,
+                loop: true
+            })
+        })
+    }
+
+    countDown() {
+        this.initialTime--;
+        if (this.initialTime > 0) {
+            this.countDownText.setText('Fly in ' + this.initialTime);
+        } else if (this.initialTime == 0) {
+            this.countDownText.setText('Fly!');
+        } else {
+            this.isPaused = false;
+            this.countDownText.setText('');
+            this.physics.resume();
+            //https://photonstorm.github.io/phaser3-docs/Phaser.Time.TimerEvent.html#remove__anchor
+            this.countDownTimedEvent.remove();
+        }
     }
 
     checkGameStatus() {
@@ -180,6 +221,7 @@ class PlayScene extends BaseScene {
     }
 
     flap() {
+        if (this.isPaused) { return; }
         this.bird.body.velocity.y -= FLAP_VELOCITY;
     }
 
