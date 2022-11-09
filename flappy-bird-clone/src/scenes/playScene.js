@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import BaseScene from './baseScene';
 
 
 const Y_GRAVITY = 600;
@@ -7,11 +8,10 @@ const PIPE_Y_DISTANCE_RANGE = [150, 250];
 const PIPE_TO_RENDER = 4;
 const PIPE_X_DISTANCE_RANGE = [400, 600];
 
-class PlayScene extends Phaser.Scene {
+class PlayScene extends BaseScene {
 
     constructor(config) {
-        super("play-scene")
-        this.config = config;
+        super("play-scene", config)
         this.bird = null;
         this.pipes = null;
         this.birdPosition = { x: this.config.width / 10, y: this.config.height / 2 };
@@ -22,7 +22,7 @@ class PlayScene extends Phaser.Scene {
 
     //https://photonstorm.github.io/phaser3-docs/Phaser.Types.Scenes.html#.SceneCreateCallback
     create() {
-        this.createBackground();
+        super.create();
         this.createBird();
         this.createPipes();
         this.createColliders();
@@ -36,15 +36,6 @@ class PlayScene extends Phaser.Scene {
     update(time /* ms time since first update */, delta /* ms delta time since last update*/) {
         this.checkGameStatus();
         this.recyclePipes();
-    }
-
-    createBackground() {
-        //x,y,key of the image
-        //x,y will be canvas coordinates, hence giving 0,0 will print only right bottom quarter of the image, since origin coordinates of the image default to its center.
-        //with .setOrigin we change the origin of the image. where 0,0 is top left corner of the image, 1,1 is bottom right
-        //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectFactory.html#image__anchor
-        //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Image.html#setOrigin__anchor
-        this.add.image(0, 0, 'sky').setOrigin(0, 0);
     }
 
     createBird() {
