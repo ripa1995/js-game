@@ -6,13 +6,16 @@ class PlayScene extends Phaser.Scene {
         super('play-scene')
     }
 
-    preload() {
-        this.load.image('sky', './assets/sky.png');
-    }
-
     create() {
-        this.add.image(0,0, 'sky')
-            .setOrigin(0);
+        const MAP = this.make.tilemap({
+            key: 'map'
+        });
+        const TILESET_1 = MAP.addTilesetImage('main_lev_build_1', 'tileset-1');
+        //const TILESET_2 = MAP.addTilesetImage('main_lev_build_2', 'tileset-2');
+        
+        //order matters here
+        MAP.createStaticLayer('environment', TILESET_1); 
+        MAP.createStaticLayer('platforms', TILESET_1);
     }
 }
 
