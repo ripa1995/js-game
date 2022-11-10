@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import Player from "../entities/player";
 
 class PlayScene extends Phaser.Scene {
 
@@ -9,9 +10,11 @@ class PlayScene extends Phaser.Scene {
     create() {
         const MAP = this.createMap();
         const LAYERS = this.createLayers(MAP);
+
         const PLAYER = this.createPlayer();
 
         this.physics.add.collider(PLAYER, LAYERS.LAYERS_COLLIDERS);
+
     }
 
     createMap() {
@@ -47,9 +50,7 @@ class PlayScene extends Phaser.Scene {
     }
 
     createPlayer() {
-        const PLAYER = this.physics.add.sprite(100, 250, 'player');
-        PLAYER.body.setGravityY(500);
-        PLAYER.setCollideWorldBounds(true);
+        const PLAYER = new Player(this, 100,250);
         return PLAYER;
     }
 }
