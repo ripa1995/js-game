@@ -9,3 +9,4 @@ List of projects:
 - [Racing Game](https://github.com/ripa1995/js-game/racing-game), from [How to Program Games: Tile Classics in JS for HTML5 Canvas](https://www.udemy.com/course/how-to-program-games) course (sections 6-16).
 - [Adventure Game](https://github.com/ripa1995/js-game/adventure-game), from [How to Program Games: Tile Classics in JS for HTML5 Canvas](https://www.udemy.com/course/how-to-program-games) course (section 17).
 - [Flappy Bird Clone](https://github.com/ripa1995/js-game/flappy-bird-clone), from [Game Development in JS - The Complete Guide (w/ Phaser 3)](https://www.udemy.com/course/game-development-in-js-the-complete-guide-w-phaser-3/) course (section 2).
+- [Platform Game](https://github.com/ripa1995/js-game/platform-game), from [Game Development in JS - The Complete Guide (w/ Phaser 3)](https://www.udemy.com/course/game-development-in-js-the-complete-guide-w-phaser-3/) course (sections 3-14).
