@@ -3,8 +3,9 @@ import Player from "../entities/player";
 
 class PlayScene extends Phaser.Scene {
 
-    constructor() {
+    constructor(config) {
         super('play-scene')
+        this.config = config;
     }
 
     create() {
@@ -14,6 +15,8 @@ class PlayScene extends Phaser.Scene {
         const PLAYER = this.createPlayer();
 
         this.createPlayerColliders(PLAYER, {colliders: {platformColliders: LAYERS.LAYERS_COLLIDERS}});
+
+        this.setupFollowupCameraOn(PLAYER);
 
     }
 
@@ -55,6 +58,13 @@ class PlayScene extends Phaser.Scene {
 
     createPlayerColliders(player, {colliders}) {
         player.addCollider(colliders.platformColliders);
+    }
+
+    setupFollowupCameraOn(player) {
+        const {width, height, mapOffset, zoomFactor } = this.config;
+        this.physics.world.setBounds(0,0, width + mapOffset,height + 100);
+        this.cameras.main.setBounds(0,0, width + mapOffset,height + 100).setZoom(zoomFactor);
+        this.cameras.main.startFollow(player);
     }
 }
 

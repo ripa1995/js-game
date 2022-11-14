@@ -3,12 +3,16 @@ import Phaser from 'phaser';
 import PlayScene from './scenes/playScene';
 import PreloadScene from './scenes/preloadScene';
 
-const WIDTH = 1280;
+const MAP_WIDTH = 1600;
+
+const WIDTH = document.body.offsetWidth;
 const HEIGHT = 600;
 
 const SHARED_CONFIG = {
   width: WIDTH,
-  height: HEIGHT
+  height: HEIGHT,
+  mapOffset: MAP_WIDTH > WIDTH ? MAP_WIDTH - WIDTH : 0,
+  zoomFactor: 1.5
 }
 
 const SCENES = [PreloadScene, PlayScene];
@@ -25,7 +29,7 @@ const CONFIG = {
     //Arcade physics plugin, manages physics simulation
     default: 'arcade',
     arcade: {
-      debug: true,
+      //debug: true,
       // gravity: {
       //   y: 200 //apply gravity to all objects in the scene
       // }
