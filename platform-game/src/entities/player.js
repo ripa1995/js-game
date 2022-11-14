@@ -14,6 +14,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     init() {
         this.gravity = 500;
         this.playerSpeed = 200;
+        this.jumpCount = 0;
+        this.consecutiveJumps = 1;
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html#createCursorKeys__anchor
         this.cursors = this.scene.input.keyboard.createCursorKeys();
 
@@ -28,7 +30,14 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update() {
-        const {left , right} = this.cursors;
+        const {left , right, space} = this.cursors;
+        //The justDown value allows you to test if this Key has just been pressed down or not.
+        //When you check this value it will return true if the Key is down, otherwise false.
+        //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.html#.JustDown__anchor
+        const isSpaceJustDown = Phaser.Input.Keyboard.JustDown(space);
+        //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Body.html#onFloor__anchor
+        const onFloor = this.body.onFloor();
+
         if (left.isDown) {
             this.setVelocityX(-this.playerSpeed);
             this.setFlipX(true);
@@ -39,7 +48,23 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.setVelocityX(0);
         }
 
-        this.body.velocity.x !== 0 ? this.play('run',true) : this.play('idle',true);
+        if (isSpaceJustDown&& (onFloor || this.jumpCount < this.consecutiveJumps)) {
+            this.jumpCount++;
+            this.setVelocityY(-this.playerSpeed * 1.5);
+        }
+
+        if (onFloor) {
+            this.jumpCount = 0;
+        }
+
+        onFloor ? 
+            //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Sprite.html#play__anchor
+            this.body.velocity.x !== 0 ? 
+                this.play('run',true) 
+                : 
+                this.play('idle',true)
+            :
+            this.play('jump', true);
 
     }
 
