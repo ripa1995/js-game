@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import initAnimations from "../anims/player"
 import collidable from "../mixins/collidable";
+import HealthBar from "../hud/healthBar";
 
 class Player extends Phaser.Physics.Arcade.Sprite {
 
@@ -8,7 +9,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         super(scene, x,y, 'player')
         scene.physics.add.existing(this);
         scene.add.existing(this);
-
         //Copy the values of all of the enumerable own properties from one or more source objects to a target object. Returns the target object
         Object.assign(this, collidable);
 
@@ -26,6 +26,15 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html#createCursorKeys__anchor
         this.cursors = this.scene.input.keyboard.createCursorKeys();
+        console.log(this.scene)
+        this.health = 100;
+        this.hp = new HealthBar(
+            this.scene, 
+            this.scene.config.leftTopCorner.x + 5,
+            this.scene.config.leftTopCorner.y + 5,
+            2, 
+            this.health    
+        );
 
         this.body.setSize(25, 35)
         this.body.setGravityY(this.gravity);
@@ -101,6 +110,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.hasBeenHit = true;
         this.bounceOff();
         const dmgAnim = this.playDamageTween();
+
+        this.health -= initiator.damage;
+        this.hp.setValue(this.health);
+
         this.scene.time.delayedCall(750, () => {
             this.hasBeenHit = false
             dmgAnim.stop();
