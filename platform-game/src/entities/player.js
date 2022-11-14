@@ -21,6 +21,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.playerSpeed = 200;
         this.jumpCount = 0;
         this.consecutiveJumps = 1;
+        this.hasBeenHit = false;
+        this.bounceVelocity = 175;
+
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html#createCursorKeys__anchor
         this.cursors = this.scene.input.keyboard.createCursorKeys();
 
@@ -37,6 +40,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update() {
+        if (this.hasBeenHit) {
+            return;
+        }
         const {left , right, space} = this.cursors;
         //The justDown value allows you to test if this Key has just been pressed down or not.
         //When you check this value it will return true if the Key is down, otherwise false.
@@ -73,6 +79,33 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             :
             this.play('jump', true);
 
+    }
+
+    playDamageTween() {
+        return this.scene.tweens.add({
+            targets: this,
+            duration: 100,
+            repeat: -1, 
+            tint: 0xffffff
+        })
+    }
+
+    bounceOff() {
+        this.body.touching.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity,-this.bounceVelocity)
+    }
+
+    takesHit(initiator) {
+        if (this.hasBeenHit) {
+            return ;
+        }
+        this.hasBeenHit = true;
+        this.bounceOff();
+        const dmgAnim = this.playDamageTween();
+        this.scene.time.delayedCall(750, () => {
+            this.hasBeenHit = false
+            dmgAnim.stop();
+            this.clearTint();
+        });
     }
 }
 

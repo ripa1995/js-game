@@ -12,7 +12,8 @@ const SHARED_CONFIG = {
   width: WIDTH,
   height: HEIGHT,
   mapOffset: MAP_WIDTH > WIDTH ? MAP_WIDTH - WIDTH : 0,
-  zoomFactor: 1.5
+  zoomFactor: 1.5,
+  debug: true
 }
 
 const SCENES = [PreloadScene, PlayScene];
@@ -29,7 +30,7 @@ const CONFIG = {
     //Arcade physics plugin, manages physics simulation
     default: 'arcade',
     arcade: {
-      debug: true,
+      debug: SHARED_CONFIG.debug,
       // gravity: {
       //   y: 200 //apply gravity to all objects in the scene
       // }

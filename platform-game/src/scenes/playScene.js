@@ -101,10 +101,14 @@ class PlayScene extends Phaser.Scene {
         return enemies
     }
 
+    onPlayerCollision(enemy, player) {
+        player.takesHit(enemy);
+    }
+
     createEnemiesColliders(enemies, {colliders}) {
         enemies
             .addCollider(colliders.platformColliders)
-            .addCollider(colliders.player);
+            .addCollider(colliders.player, this.onPlayerCollision);
     }
 
     setupFollowupCameraOn(player) {

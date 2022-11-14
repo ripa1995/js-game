@@ -8,6 +8,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this);
         scene.add.existing(this);
 
+        this.config = scene.config;
+
         //Copy the values of all of the enumerable own properties from one or more source objects to a target object. Returns the target object
         Object.assign(this, collidable);
 
@@ -59,8 +61,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
             this.currentPatrolDistance = 0;
         }
 
-        this.rayGraphics.clear();
-        this.rayGraphics.strokeLineShape(ray);
+        if (this.config.debug && ray) {
+            this.rayGraphics.clear();
+            this.rayGraphics.strokeLineShape(ray);
+        }
     }
 
     setPlatformColliders(platformCollidersLayer) {
