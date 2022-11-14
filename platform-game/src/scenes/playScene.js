@@ -11,11 +11,12 @@ class PlayScene extends Phaser.Scene {
     create() {
         const MAP = this.createMap();
         const LAYERS = this.createLayers(MAP);
+        const PLAYER_ZONES = this.getPlayerZones(LAYERS.PLAYER_ZONES);
+        const PLAYER = this.createPlayer(PLAYER_ZONES.start);
 
-        const PLAYER = this.createPlayer();
-
-        this.createPlayerColliders(PLAYER, {colliders: {platformColliders: LAYERS.LAYERS_COLLIDERS}});
-
+        this.createPlayerColliders(PLAYER, {colliders: {platformColliders: LAYERS.LAYER_COLLIDERS}});
+        
+        this.createEndOfLevel(PLAYER_ZONES.end, PLAYER);
         this.setupFollowupCameraOn(PLAYER);
 
     }
@@ -41,6 +42,8 @@ class PlayScene extends Phaser.Scene {
         const ENVIRONMENT = map.createStaticLayer('environment', TILESET_1); 
         const PLATFORMS = map.createStaticLayer('platforms', TILESET_1);
         
+        const PLAYER_ZONES = map.getObjectLayer('player_zones');
+
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.StaticTilemapLayer.html#setCollisionByExclusion__anchor
         //set collision on all tiles except those defined in the indexes (so -1 means all except -1 and 0) 
         //PLATFORMS.setCollisionByExclusion(-1, true)
@@ -49,11 +52,11 @@ class PlayScene extends Phaser.Scene {
         //set collision on all tiles that has the specified property defined
         LAYER_COLLIDERS.setCollisionByProperty({collides:true});
 
-        return {ENVIRONMENT, PLATFORMS, LAYERS_COLLIDERS: LAYER_COLLIDERS}
+        return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES}
     }
 
-    createPlayer() {
-        return new Player(this, 100,250);
+    createPlayer(start) {
+        return new Player(this, start.x,start.y);
     }
 
     createPlayerColliders(player, {colliders}) {
@@ -65,6 +68,26 @@ class PlayScene extends Phaser.Scene {
         this.physics.world.setBounds(0,0, width + mapOffset,height + 100);
         this.cameras.main.setBounds(0,0, width + mapOffset,height + 100).setZoom(zoomFactor);
         this.cameras.main.startFollow(player);
+    }
+
+    getPlayerZones(layer) {
+        const playerZones = layer.objects;
+        return {
+            start: playerZones.find(zone => zone.name === 'startZone'),
+            end: playerZones.find(zone => zone.name === 'endZone')
+        }
+    }
+
+    createEndOfLevel(end, player) {
+        const endOfLevel = this.physics.add.sprite(end.x,end.y, 'end')
+            .setAlpha(0)
+            .setSize(5, 200)
+            .setOrigin(0.5, 1);
+
+        const endOfLevelOverlap = this.physics.add.overlap(player, endOfLevel, () => {
+            endOfLevelOverlap.active = false;
+            console.log("Player won!");
+        });
     }
 }
 
