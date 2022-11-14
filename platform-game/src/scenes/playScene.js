@@ -16,7 +16,7 @@ class PlayScene extends Phaser.Scene {
         const LAYERS = this.createLayers(MAP);
         const PLAYER_ZONES = this.getPlayerZones(LAYERS.PLAYER_ZONES);
         const PLAYER = this.createPlayer(PLAYER_ZONES.start);
-        const ENEMIES = this.createEnemies(LAYERS.ENEMY_SPAWNS);
+        const ENEMIES = this.createEnemies(LAYERS.ENEMY_SPAWNS, LAYERS.LAYER_COLLIDERS);
 
         this.createPlayerColliders(PLAYER, {colliders: {platformColliders: LAYERS.LAYER_COLLIDERS}});
         this.createEnemiesColliders(ENEMIES, {colliders: {
@@ -26,7 +26,24 @@ class PlayScene extends Phaser.Scene {
 
         this.createEndOfLevel(PLAYER_ZONES.end, PLAYER);
         this.setupFollowupCameraOn(PLAYER);
+ }
 
+    finishDrawing(pointer, layer) {
+        this.line.x2 = pointer.worldX;
+        this.line.y2 = pointer.worldY;
+
+        this.graphics.clear();
+        this.graphics.strokeLineShape(this.line);
+
+        this.tileHits = layer.getTilesWithinShape(this.line);
+        if (this.tileHits.length > 0) {
+            this.tileHits.forEach(tile => {
+                tile.index !== -1 && tile.setCollision(true);
+            })
+        }
+        this.drawDebug(layer)
+
+        this.plotting = false;
     }
 
     createMap() {
@@ -73,11 +90,12 @@ class PlayScene extends Phaser.Scene {
         player.addCollider(colliders.platformColliders);
     }
 
-    createEnemies(spawnLayer) {
+    createEnemies(spawnLayer, platformColliders) {
         const enemies = new Enemies(this);
         const enemyTypes = enemies.getTypes();
         spawnLayer.objects.forEach(spawnPoint => {
             const enemy = new enemyTypes[spawnPoint.type](this, spawnPoint.x,spawnPoint.y);
+            enemy.setPlatformColliders(platformColliders)
             enemies.add(enemy)
         })
         return enemies
