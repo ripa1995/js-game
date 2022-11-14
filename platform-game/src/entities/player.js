@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import initAnimations from "./playerAnims"
+import initAnimations from "../anims/player"
 import collidable from "../mixins/collidable";
 
 class Player extends Phaser.Physics.Arcade.Sprite {
@@ -24,6 +24,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html#createCursorKeys__anchor
         this.cursors = this.scene.input.keyboard.createCursorKeys();
 
+        this.body.setSize(25, 35)
         this.body.setGravityY(this.gravity);
         this.setCollideWorldBounds(true);
         this.setOrigin(0.5, 1);

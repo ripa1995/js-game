@@ -1,5 +1,8 @@
 import Phaser from "phaser";
+import Birdman from "../entities/birdman";
 import Player from "../entities/player";
+import { getEnemyTypes } from "../types";
+import Enemies from "../groups/enemies";
 
 class PlayScene extends Phaser.Scene {
 
@@ -13,9 +16,14 @@ class PlayScene extends Phaser.Scene {
         const LAYERS = this.createLayers(MAP);
         const PLAYER_ZONES = this.getPlayerZones(LAYERS.PLAYER_ZONES);
         const PLAYER = this.createPlayer(PLAYER_ZONES.start);
+        const ENEMIES = this.createEnemies(LAYERS.ENEMY_SPAWNS);
 
         this.createPlayerColliders(PLAYER, {colliders: {platformColliders: LAYERS.LAYER_COLLIDERS}});
-        
+        this.createEnemiesColliders(ENEMIES, {colliders: {
+            platformColliders: LAYERS.LAYER_COLLIDERS,
+            player: PLAYER
+        }});
+
         this.createEndOfLevel(PLAYER_ZONES.end, PLAYER);
         this.setupFollowupCameraOn(PLAYER);
 
@@ -44,6 +52,8 @@ class PlayScene extends Phaser.Scene {
         
         const PLAYER_ZONES = map.getObjectLayer('player_zones');
 
+        const ENEMY_SPAWNS = map.getObjectLayer('enemy_spawns');
+
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.StaticTilemapLayer.html#setCollisionByExclusion__anchor
         //set collision on all tiles except those defined in the indexes (so -1 means all except -1 and 0) 
         //PLATFORMS.setCollisionByExclusion(-1, true)
@@ -52,7 +62,7 @@ class PlayScene extends Phaser.Scene {
         //set collision on all tiles that has the specified property defined
         LAYER_COLLIDERS.setCollisionByProperty({collides:true});
 
-        return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES}
+        return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES, ENEMY_SPAWNS}
     }
 
     createPlayer(start) {
@@ -61,6 +71,22 @@ class PlayScene extends Phaser.Scene {
 
     createPlayerColliders(player, {colliders}) {
         player.addCollider(colliders.platformColliders);
+    }
+
+    createEnemies(spawnLayer) {
+        const enemies = new Enemies(this);
+        const enemyTypes = enemies.getTypes();
+        spawnLayer.objects.forEach(spawnPoint => {
+            const enemy = new enemyTypes[spawnPoint.type](this, spawnPoint.x,spawnPoint.y);
+            enemies.add(enemy)
+        })
+        return enemies
+    }
+
+    createEnemiesColliders(enemies, {colliders}) {
+        enemies
+            .addCollider(colliders.platformColliders)
+            .addCollider(colliders.player);
     }
 
     setupFollowupCameraOn(player) {
@@ -81,7 +107,7 @@ class PlayScene extends Phaser.Scene {
     createEndOfLevel(end, player) {
         const endOfLevel = this.physics.add.sprite(end.x,end.y, 'end')
             .setAlpha(0)
-            .setSize(5, 200)
+            .setSize(5, this.config.height)
             .setOrigin(0.5, 1);
 
         const endOfLevelOverlap = this.physics.add.overlap(player, endOfLevel, () => {
