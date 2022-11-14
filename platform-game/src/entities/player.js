@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import initAnimations from "./playerAnims"
+import collidable from "../mixins/collidable";
 
 class Player extends Phaser.Physics.Arcade.Sprite {
 
@@ -7,6 +8,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         super(scene, x,y, 'player')
         scene.physics.add.existing(this);
         scene.add.existing(this);
+
+        //Copy the values of all of the enumerable own properties from one or more source objects to a target object. Returns the target object
+        Object.assign(this, collidable);
+
         this.init();
         this.initEvents();
     }
@@ -67,7 +72,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.play('jump', true);
 
     }
-
 }
 
 export default Player;
