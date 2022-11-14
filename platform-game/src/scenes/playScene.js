@@ -50,8 +50,7 @@ class PlayScene extends Phaser.Scene {
     }
 
     createPlayer() {
-        const PLAYER = new Player(this, 100,250);
-        return PLAYER;
+        return new Player(this, 100,250);
     }
 }
 

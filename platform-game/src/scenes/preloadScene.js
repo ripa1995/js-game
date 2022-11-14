@@ -10,7 +10,12 @@ class PreloadScene extends Phaser.Scene {
         this.load.tilemapTiledJSON('map', './assets/darko.json');
         this.load.image('tileset-1', './assets/main_lev_build_1.png');
         this.load.image('tileset-2', './assets/main_lev_build_2.png');
-        this.load.image('player','./assets/player/movements/idle01.png');
+        
+        this.load.spritesheet('player','./assets/player/move_sprite_1.png', {
+            frameWidth: 32,
+            frameHeight: 38,
+            spacing: 32
+        });
     }
 
     create() {
