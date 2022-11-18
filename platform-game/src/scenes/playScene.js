@@ -105,10 +105,16 @@ class PlayScene extends Phaser.Scene {
         player.takesHit(enemy);
     }
 
+    onWeaponHit(entity, source) {
+        //console.log(`${entity} taking dmg from ${source}`);
+        entity.takesHit(source);
+    }
+
     createEnemiesColliders(enemies, {colliders}) {
         enemies
             .addCollider(colliders.platformColliders)
-            .addCollider(colliders.player, this.onPlayerCollision);
+            .addCollider(colliders.player, this.onPlayerCollision)
+            .addCollider(colliders.player.projectiles, this.onWeaponHit);
     }
 
     setupFollowupCameraOn(player) {

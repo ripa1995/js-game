@@ -36,6 +36,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.setVelocityX(this.speed);
 
         this.damage = 20;
+        this.health = 40;
     }
 
     initEvents() {
@@ -71,6 +72,15 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     setPlatformColliders(platformCollidersLayer) {
         this.platformCollidersLayer = platformCollidersLayer;
+    }
+
+    takesHit(source) {
+        this.health -= source.damage;
+        source.setActive(false);
+        source.setVisible(false);
+        if (this.health <= 0) {
+            console.log("enemy terminated");
+        }
     }
 }
 

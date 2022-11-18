@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import initAnimations from "../anims/player"
 import collidable from "../mixins/collidable";
 import HealthBar from "../hud/healthBar";
+import Projectiles from "../attacks/projectiles";
+import anims from "../mixins/anims";
 
 class Player extends Phaser.Physics.Arcade.Sprite {
 
@@ -11,6 +13,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         //Copy the values of all of the enumerable own properties from one or more source objects to a target object. Returns the target object
         Object.assign(this, collidable);
+        Object.assign(this, anims);
 
         this.init();
         this.initEvents();
@@ -26,7 +29,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html#createCursorKeys__anchor
         this.cursors = this.scene.input.keyboard.createCursorKeys();
-        console.log(this.scene)
+        
+        this.lastDirection = Phaser.Physics.Arcade.FACING_RIGHT;
+        this.projectiles = new Projectiles(this.scene);
+
         this.health = 100;
         this.hp = new HealthBar(
             this.scene, 
@@ -42,6 +48,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.setOrigin(0.5, 1);
 
         initAnimations(this.scene.anims); 
+
+        this.scene.input.keyboard.on('keydown-Q', () => {
+            this.play('throw',true)
+            this.projectiles.fireProjectile(this);
+        })
     }
 
     initEvents() {
@@ -63,9 +74,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         if (left.isDown) {
             this.setVelocityX(-this.playerSpeed);
             this.setFlipX(true);
+            this.lastDirection = Phaser.Physics.Arcade.FACING_LEFT;
         } else if (right.isDown) {
             this.setVelocityX(this.playerSpeed);
             this.setFlipX(false);
+            this.lastDirection = Phaser.Physics.Arcade.FACING_RIGHT;
         } else {
             this.setVelocityX(0);
         }
@@ -77,6 +90,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         if (onFloor) {
             this.jumpCount = 0;
+        }
+
+        if (this.isPlayingAnims('throw')) {
+            return;
         }
 
         onFloor ? 
