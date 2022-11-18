@@ -4,6 +4,8 @@ import Player from "../entities/player";
 import { getEnemyTypes } from "../types";
 import Enemies from "../groups/enemies";
 
+import initAnims from '../anims'
+
 class PlayScene extends Phaser.Scene {
 
     constructor(config) {
@@ -26,6 +28,7 @@ class PlayScene extends Phaser.Scene {
 
         this.createEndOfLevel(PLAYER_ZONES.end, PLAYER);
         this.setupFollowupCameraOn(PLAYER);
+        initAnims(this.anims);
  }
 
     finishDrawing(pointer, layer) {

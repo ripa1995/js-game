@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import SpriteEffect from "../effects/spriteEffect";
 
 class Projectile extends Phaser.Physics.Arcade.Sprite {
 
@@ -21,18 +22,28 @@ class Projectile extends Phaser.Physics.Arcade.Sprite {
         super.preUpdate(time, delta);
         this.traveledDistance += this.body.deltaAbsX();
         if (this.isOutOfRange()){
-            this.body.reset(0,0)
-            this.setActive(false);
-            this.setVisible(false);
+            this.activateProjectile(false);
+            this.body.reset(0,0);
             this.traveledDistance = 0;
         }
     }
 
     fire(x,y) {
-        this.setActive(true);
-        this.setVisible(true);
         this.body.reset(x,y);
+        this.activateProjectile(true);
         this.setVelocityX(this.speed);
+    }
+
+    deliversHit(target) {
+        this.activateProjectile(false);
+        this.body.reset(0,0);
+        this.traveledDistance = 0;
+        new SpriteEffect(this.scene, 0,0, 'hit-effect').playOn(target);
+    }
+
+    activateProjectile(isActive) {
+        this.setActive(isActive);
+        this.setVisible(isActive);
     }
 
     isOutOfRange() {
