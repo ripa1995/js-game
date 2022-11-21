@@ -19,6 +19,9 @@ class PlayScene extends Phaser.Scene {
         this.score = 0; 
         this.hud = new Hud(this, 0,0);
 
+        this.playBgMusic();
+        this.coinPickupSound = this.sound.add('coin-pickup', {volume:0.2});
+
         const MAP = this.createMap();
         initAnims(this.anims);
 
@@ -28,7 +31,6 @@ class PlayScene extends Phaser.Scene {
         const ENEMIES = this.createEnemies(LAYERS.ENEMY_SPAWNS, LAYERS.LAYER_COLLIDERS);
         const COLLECTABLES = this.createCollectables(LAYERS.COLLECTABLES);
 
-        this.createBG(MAP);
 
         this.createPlayerColliders(PLAYER, {colliders: {
             platformColliders: LAYERS.LAYER_COLLIDERS,
@@ -46,9 +48,22 @@ class PlayScene extends Phaser.Scene {
         }
 
         this.createBackButton();
+        this.createBG(MAP);
+        
         this.createEndOfLevel(PLAYER_ZONES.end, PLAYER);
         this.setupFollowupCameraOn(PLAYER);
- }
+    }
+
+    playBgMusic() {
+        if (this.sound.get('theme')) {
+            this.sound.get('theme').play();
+            return ;
+        }
+        this.sound.add('theme', {
+            loop: true,
+            volume: 0.1
+        }).play();
+    }
 
     createMap() {
         //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#make__anchor
@@ -116,6 +131,7 @@ class PlayScene extends Phaser.Scene {
             .setInteractive();
 
         btnBack.on('pointerup', () => {
+            this.sound.get('theme').stop();
             this.scene.start('menu-scene');
         })
     }
@@ -172,6 +188,7 @@ class PlayScene extends Phaser.Scene {
         //disableGameObject -> deactivate object, default false
         //hideGameObject -> hide object, default false
         collectable.disableBody(true, true);
+        this.coinPickupSound.play();
         this.score += collectable.score;
         this.hud.updateScoreboard(this.score);
         collectable.destroy();

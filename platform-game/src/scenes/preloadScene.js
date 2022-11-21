@@ -75,6 +75,13 @@ class PreloadScene extends Phaser.Scene {
         this.load.image('diamond-5', './assets/collectables/diamond_big_05.png');
         this.load.image('diamond-6', './assets/collectables/diamond_big_06.png');
     
+        this.load.audio('theme', './assets/music/theme_music.wav');
+        this.load.audio('projectile-launch', './assets/music/projectile_launch.wav');
+        this.load.audio('step', './assets/music/step_mud.wav');
+        this.load.audio('jump', './assets/music/jump.wav');
+        this.load.audio('swipe', './assets/music/swipe.wav');
+        this.load.audio('coin-pickup', './assets/music/coin_pickup.wav');
+
         this.load.once('complete', () => {
             this.startGame();
         });

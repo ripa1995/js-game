@@ -33,6 +33,12 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.isSliding = false;
 
+        this.jumpSound = this.scene.sound.add('jump', {volume:0.2});
+        this.projectileLaunchSound = this.scene.sound.add('projectile-launch', {volume:0.2});
+        this.stepSound = this.scene.sound.add('step', {volume:0.2});
+        this.swipeSound = this.scene.sound.add('swipe', {volume:0.2});
+
+
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html#createCursorKeys__anchor
         this.cursors = this.scene.input.keyboard.createCursorKeys();
 
@@ -58,6 +64,17 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.handleAttacks();
         this.handleMovements();
+
+        this.scene.time.addEvent({
+            delay: 350,
+            repeat: -1,
+            callbackScope: this,
+            callback: () => {
+                if (this.isPlayingAnims('run')) {
+                    this.stepSound.play();
+                }
+            }
+        })
     }
 
     initEvents() {
@@ -95,6 +112,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         if (isSpaceJustDown && (onFloor || this.jumpCount < this.consecutiveJumps)) {
+            this.jumpSound.play();
             this.jumpCount++;
             this.setVelocityY(-this.playerSpeed * 1.5);
         }
@@ -120,6 +138,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     handleAttacks() {
         this.scene.input.keyboard.on('keydown-Q', () => {
+            this.projectileLaunchSound.play();
             this.play('throw', true)
             this.projectiles.fireProjectile(this, 'iceball');
         })
@@ -129,6 +148,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 && this.meleeWeapon.timeFromLastSwing + this.meleeWeapon.attackSpeed > getTimestamp()) {
                 return;
             }
+            this.swipeSound.play();
             this.play('throw', true)
             this.meleeWeapon.swing(this);
         })
