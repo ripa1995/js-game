@@ -3,8 +3,9 @@ import Birdman from "../entities/birdman";
 import Player from "../entities/player";
 import { getEnemyTypes } from "../types";
 import Enemies from "../groups/enemies";
-
+import Collectables from "../groups/collectables";
 import initAnims from '../anims'
+import Hud from "../hud";
 
 class PlayScene extends Phaser.Scene {
 
@@ -14,15 +15,22 @@ class PlayScene extends Phaser.Scene {
     }
 
     create() {
+        this.score = 0; 
+        this.hud = new Hud(this, 0,0);
+
         const MAP = this.createMap();
+        initAnims(this.anims);
+
         const LAYERS = this.createLayers(MAP);
         const PLAYER_ZONES = this.getPlayerZones(LAYERS.PLAYER_ZONES);
         const PLAYER = this.createPlayer(PLAYER_ZONES.start);
         const ENEMIES = this.createEnemies(LAYERS.ENEMY_SPAWNS, LAYERS.LAYER_COLLIDERS);
+        const COLLECTABLES = this.createCollectables(LAYERS.COLLECTABLES);
 
         this.createPlayerColliders(PLAYER, {colliders: {
             platformColliders: LAYERS.LAYER_COLLIDERS,
-            projectiles: ENEMIES.getProjectiles()
+            projectiles: ENEMIES.getProjectiles(),
+            collectables: COLLECTABLES
         }});
         this.createEnemiesColliders(ENEMIES, {colliders: {
             platformColliders: LAYERS.LAYER_COLLIDERS,
@@ -31,26 +39,7 @@ class PlayScene extends Phaser.Scene {
 
         this.createEndOfLevel(PLAYER_ZONES.end, PLAYER);
         this.setupFollowupCameraOn(PLAYER);
-        initAnims(this.anims);
  }
-
-    finishDrawing(pointer, layer) {
-        this.line.x2 = pointer.worldX;
-        this.line.y2 = pointer.worldY;
-
-        this.graphics.clear();
-        this.graphics.strokeLineShape(this.line);
-
-        this.tileHits = layer.getTilesWithinShape(this.line);
-        if (this.tileHits.length > 0) {
-            this.tileHits.forEach(tile => {
-                tile.index !== -1 && tile.setCollision(true);
-            })
-        }
-        this.drawDebug(layer)
-
-        this.plotting = false;
-    }
 
     createMap() {
         //https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html#make__anchor
@@ -70,12 +59,13 @@ class PlayScene extends Phaser.Scene {
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.StaticTilemapLayer.html
         //order matters here
         const LAYER_COLLIDERS = map.createStaticLayer('layer_colliders', TILESET_1);
-        const ENVIRONMENT = map.createStaticLayer('environment', TILESET_1); 
+        const ENVIRONMENT = map.createStaticLayer('environment', TILESET_1).setDepth(-2); 
         const PLATFORMS = map.createStaticLayer('platforms', TILESET_1);
         
         const PLAYER_ZONES = map.getObjectLayer('player_zones');
 
         const ENEMY_SPAWNS = map.getObjectLayer('enemy_spawns');
+        const COLLECTABLES = map.getObjectLayer('collectables');
 
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.StaticTilemapLayer.html#setCollisionByExclusion__anchor
         //set collision on all tiles except those defined in the indexes (so -1 means all except -1 and 0) 
@@ -85,7 +75,16 @@ class PlayScene extends Phaser.Scene {
         //set collision on all tiles that has the specified property defined
         LAYER_COLLIDERS.setCollisionByProperty({collides:true});
 
-        return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES, ENEMY_SPAWNS}
+        return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES, ENEMY_SPAWNS, COLLECTABLES}
+    }
+
+    createCollectables(collectablesLayer) {
+        const collectables = new Collectables(this).setDepth(-1);
+        collectables.addFromLayer(collectablesLayer);
+
+        collectables.playAnimation('diamond-shine');
+
+        return collectables
     }
 
     createPlayer(start) {
@@ -95,7 +94,8 @@ class PlayScene extends Phaser.Scene {
     createPlayerColliders(player, {colliders}) {
         player
             .addCollider(colliders.platformColliders)
-            .addCollider(colliders.projectiles, this.onWeaponHit);
+            .addCollider(colliders.projectiles, this.onWeaponHit)
+            .addOverlap(colliders.collectables, this.onCollect, this);
     }
 
     createEnemies(spawnLayer, platformColliders) {
@@ -116,6 +116,16 @@ class PlayScene extends Phaser.Scene {
     onWeaponHit(entity, source) {
         //console.log(`${entity} taking dmg from ${source}`);
         entity.takesHit(source);
+    }
+
+    onCollect(entity, collectable) {
+        //console.log(`${entity} collecting ${collectable}`);
+        //disableGameObject -> deactivate object, default false
+        //hideGameObject -> hide object, default false
+        collectable.disableBody(true, true);
+        this.score += collectable.score;
+        this.hud.updateScoreboard(this.score);
+        collectable.destroy();
     }
 
     createEnemiesColliders(enemies, {colliders}) {

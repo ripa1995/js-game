@@ -3,7 +3,7 @@ import Phaser from "phaser";
 class HealthBar {
 
     constructor(scene, x,y, scale = 1, totalHealth) {
-        this.bar = new Phaser.GameObjects.Graphics(scene);
+        this.bar = new Phaser.GameObjects.Graphics(scene).setDepth(100);
 
         this.x = x / scale;
         this.y = y / scale;
