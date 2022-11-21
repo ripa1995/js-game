@@ -7,11 +7,12 @@ import anims from "../mixins/anims";
 import MeleeWeapon from "../attacks/meleeWeapon";
 import { getTimestamp } from "../utils/functions";
 import Projectile from "../attacks/projectile";
+import EventEmitter from "../events/emitter";
 
 class Player extends Phaser.Physics.Arcade.Sprite {
 
-    constructor(scene, x,y) {
-        super(scene, x,y, 'player')
+    constructor(scene, x, y) {
+        super(scene, x, y, 'player')
         scene.physics.add.existing(this);
         scene.add.existing(this);
         //Copy the values of all of the enumerable own properties from one or more source objects to a target object. Returns the target object
@@ -34,18 +35,18 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html#createCursorKeys__anchor
         this.cursors = this.scene.input.keyboard.createCursorKeys();
-        
+
         this.lastDirection = Phaser.Physics.Arcade.FACING_RIGHT;
         this.projectiles = new Projectiles(this.scene, 'iceball-1');
-        this.meleeWeapon = new MeleeWeapon(this.scene, 0,0, 'sword-default');
+        this.meleeWeapon = new MeleeWeapon(this.scene, 0, 0, 'sword-default');
 
         this.health = 100;
         this.hp = new HealthBar(
-            this.scene, 
+            this.scene,
             this.scene.config.leftTopCorner.x + 5,
             this.scene.config.leftTopCorner.y + 5,
-            2, 
-            this.health    
+            2,
+            this.health
         );
 
         this.body.setSize(25, 35)
@@ -53,7 +54,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.setCollideWorldBounds(true);
         this.setOrigin(0.5, 1);
 
-        initAnimations(this.scene.anims); 
+        initAnimations(this.scene.anims);
 
         this.handleAttacks();
         this.handleMovements();
@@ -64,10 +65,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update() {
-        if (this.hasBeenHit || this.isSliding) {
+        if (this.hasBeenHit || this.isSliding || !this.body) {
             return;
         }
-        const {left , right, space, down} = this.cursors;
+
+        if (this.getBounds().top > this.scene.config.height) {
+            EventEmitter.emit('PLAYER_LOOSE');
+            return;
+        }
+
+        const { left, right, space, down } = this.cursors;
         //The justDown value allows you to test if this Key has just been pressed down or not.
         //When you check this value it will return true if the Key is down, otherwise false.
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.html#.JustDown__anchor
@@ -87,7 +94,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.setVelocityX(0);
         }
 
-        if (isSpaceJustDown&& (onFloor || this.jumpCount < this.consecutiveJumps)) {
+        if (isSpaceJustDown && (onFloor || this.jumpCount < this.consecutiveJumps)) {
             this.jumpCount++;
             this.setVelocityY(-this.playerSpeed * 1.5);
         }
@@ -100,12 +107,12 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        onFloor ? 
+        onFloor ?
             //https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Sprite.html#play__anchor
-            this.body.velocity.x !== 0 ? 
-                this.play('run',true) 
-                : 
-                this.play('idle',true)
+            this.body.velocity.x !== 0 ?
+                this.play('run', true)
+                :
+                this.play('idle', true)
             :
             this.play('jump', true);
 
@@ -113,33 +120,33 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     handleAttacks() {
         this.scene.input.keyboard.on('keydown-Q', () => {
-            this.play('throw',true)
+            this.play('throw', true)
             this.projectiles.fireProjectile(this, 'iceball');
         })
 
         this.scene.input.keyboard.on('keydown-E', () => {
-            if (this.meleeWeapon.timeFromLastSwing 
+            if (this.meleeWeapon.timeFromLastSwing
                 && this.meleeWeapon.timeFromLastSwing + this.meleeWeapon.attackSpeed > getTimestamp()) {
                 return;
             }
-            this.play('throw',true)
+            this.play('throw', true)
             this.meleeWeapon.swing(this);
         })
     }
 
     handleMovements() {
         this.scene.input.keyboard.on('keydown-DOWN', () => {
-            if (!this.body.onFloor()) {return;}
+            if (!this.body.onFloor()) { return; }
             this.isSliding = true;
             this.body.setSize(this.width, this.height / 2);
             this.body.setOffset(0, this.height / 2);
             this.setVelocityX(0);
-            this.play('slide',true)
+            this.play('slide', true)
         })
 
         this.scene.input.keyboard.on('keyup-DOWN', () => {
             this.body.setSize(this.width, this.height);
-            this.setOffset(0,0);
+            this.setOffset(0, 0);
             this.isSliding = false;
         })
     }
@@ -148,28 +155,35 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         return this.scene.tweens.add({
             targets: this,
             duration: 100,
-            repeat: -1, 
+            repeat: -1,
             tint: 0xffffff
         })
     }
 
     bounceOff(source) {
         if (source.body) {
-            this.body.touching.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity,-this.bounceVelocity)
+            this.body.touching.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity, -this.bounceVelocity)
         } else {
-            this.body.blocked.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity,-this.bounceVelocity)    
+            this.body.blocked.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity, -this.bounceVelocity)
         }
     }
 
     takesHit(source) {
         if (this.hasBeenHit) {
-            return ;
+            return;
         }
+
+        this.health -= source.damage || source.properties.damage || 0;
+        if (this.health <= 0) {
+            EventEmitter.emit('PLAYER_LOOSE')
+            this.hasBeenHit = false;
+            return;
+        }
+
         this.hasBeenHit = true;
         this.bounceOff(source);
         const dmgAnim = this.playDamageTween();
 
-        this.health -= source.damage || source.properties.damage || 0;
         this.hp.setValue(this.health);
 
         source.deliversHit && source.deliversHit(this);

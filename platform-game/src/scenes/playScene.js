@@ -6,6 +6,7 @@ import Enemies from "../groups/enemies";
 import Collectables from "../groups/collectables";
 import initAnims from '../anims'
 import Hud from "../hud";
+import EventEmitter from "../events/emitter";
 
 class PlayScene extends Phaser.Scene {
 
@@ -14,7 +15,7 @@ class PlayScene extends Phaser.Scene {
         this.config = config;
     }
 
-    create() {
+    create({gameStatus}) {
         this.score = 0; 
         this.hud = new Hud(this, 0,0);
 
@@ -38,6 +39,9 @@ class PlayScene extends Phaser.Scene {
             player: PLAYER
         }});
 
+        if (gameStatus !== 'PLAYER_LOOSE') {
+            this.createGameEvents();
+        }
         this.createEndOfLevel(PLAYER_ZONES.end, PLAYER);
         this.setupFollowupCameraOn(PLAYER);
  }
@@ -80,6 +84,12 @@ class PlayScene extends Phaser.Scene {
         TRAPS.setCollisionByExclusion(-1);
 
         return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES, ENEMY_SPAWNS, COLLECTABLES, TRAPS}
+    }
+
+    createGameEvents() {
+        EventEmitter.on('PLAYER_LOOSE', () => {
+            this.scene.restart({gameStatus: 'PLAYER_LOOSE'});
+        })
     }
 
     createCollectables(collectablesLayer) {
