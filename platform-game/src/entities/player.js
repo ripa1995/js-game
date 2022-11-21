@@ -30,6 +30,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.hasBeenHit = false;
         this.bounceVelocity = 175;
 
+        this.isSliding = false;
+
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html#createCursorKeys__anchor
         this.cursors = this.scene.input.keyboard.createCursorKeys();
         
@@ -53,19 +55,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         initAnimations(this.scene.anims); 
 
-        this.scene.input.keyboard.on('keydown-Q', () => {
-            this.play('throw',true)
-            this.projectiles.fireProjectile(this, 'iceball');
-        })
-
-        this.scene.input.keyboard.on('keydown-E', () => {
-            if (this.meleeWeapon.timeFromLastSwing 
-                && this.meleeWeapon.timeFromLastSwing + this.meleeWeapon.attackSpeed > getTimestamp()) {
-                return;
-            }
-            this.play('throw',true)
-            this.meleeWeapon.swing(this);
-        })
+        this.handleAttacks();
+        this.handleMovements();
     }
 
     initEvents() {
@@ -73,10 +64,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update() {
-        if (this.hasBeenHit) {
+        if (this.hasBeenHit || this.isSliding) {
             return;
         }
-        const {left , right, space} = this.cursors;
+        const {left , right, space, down} = this.cursors;
         //The justDown value allows you to test if this Key has just been pressed down or not.
         //When you check this value it will return true if the Key is down, otherwise false.
         //https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.html#.JustDown__anchor
@@ -105,7 +96,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.jumpCount = 0;
         }
 
-        if (this.isPlayingAnims('throw')) {
+        if (this.isPlayingAnims('throw') || this.isPlayingAnims('slide')) {
             return;
         }
 
@@ -118,6 +109,39 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             :
             this.play('jump', true);
 
+    }
+
+    handleAttacks() {
+        this.scene.input.keyboard.on('keydown-Q', () => {
+            this.play('throw',true)
+            this.projectiles.fireProjectile(this, 'iceball');
+        })
+
+        this.scene.input.keyboard.on('keydown-E', () => {
+            if (this.meleeWeapon.timeFromLastSwing 
+                && this.meleeWeapon.timeFromLastSwing + this.meleeWeapon.attackSpeed > getTimestamp()) {
+                return;
+            }
+            this.play('throw',true)
+            this.meleeWeapon.swing(this);
+        })
+    }
+
+    handleMovements() {
+        this.scene.input.keyboard.on('keydown-DOWN', () => {
+            if (!this.body.onFloor()) {return;}
+            this.isSliding = true;
+            this.body.setSize(this.width, this.height / 2);
+            this.body.setOffset(0, this.height / 2);
+            this.setVelocityX(0);
+            this.play('slide',true)
+        })
+
+        this.scene.input.keyboard.on('keyup-DOWN', () => {
+            this.body.setSize(this.width, this.height);
+            this.setOffset(0,0);
+            this.isSliding = false;
+        })
     }
 
     playDamageTween() {
