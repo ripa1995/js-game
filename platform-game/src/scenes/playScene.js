@@ -28,6 +28,8 @@ class PlayScene extends Phaser.Scene {
         const ENEMIES = this.createEnemies(LAYERS.ENEMY_SPAWNS, LAYERS.LAYER_COLLIDERS);
         const COLLECTABLES = this.createCollectables(LAYERS.COLLECTABLES);
 
+        this.createBG(MAP);
+
         this.createPlayerColliders(PLAYER, {colliders: {
             platformColliders: LAYERS.LAYER_COLLIDERS,
             projectiles: ENEMIES.getProjectiles(),
@@ -42,6 +44,8 @@ class PlayScene extends Phaser.Scene {
         if (gameStatus !== 'PLAYER_LOOSE') {
             this.createGameEvents();
         }
+
+        this.createBackButton();
         this.createEndOfLevel(PLAYER_ZONES.end, PLAYER);
         this.setupFollowupCameraOn(PLAYER);
  }
@@ -51,21 +55,25 @@ class PlayScene extends Phaser.Scene {
         //https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.GameObjectCreator.html#tilemap__anchor
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.Tilemap.html
         const MAP = this.make.tilemap({
-            key: 'map'
+            key: `level-${this.getCurrentLevel()}`
         });
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.Tilemap.html#addTilesetImage__anchor
         MAP.addTilesetImage('main_lev_build_1', 'tileset-1');
+        MAP.addTilesetImage('bg_spikes_tileset', 'bg-spikes-tileset');
         return MAP
     }
 
     createLayers(map) {
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.Tilemap.html#getTileset__anchor
         const TILESET_1 = map.getTileset('main_lev_build_1')
+        const TILESET_BG = map.getTileset('bg_spikes_tileset')
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.StaticTilemapLayer.html
         //order matters here
-        const LAYER_COLLIDERS = map.createStaticLayer('layer_colliders', TILESET_1);
+        const LAYER_COLLIDERS = map.createStaticLayer('platforms_colliders', TILESET_1);
         const ENVIRONMENT = map.createStaticLayer('environment', TILESET_1).setDepth(-2); 
         const PLATFORMS = map.createStaticLayer('platforms', TILESET_1);
+
+        const BG = map.createStaticLayer('distance', TILESET_BG).setDepth(-12);
         
         const PLAYER_ZONES = map.getObjectLayer('player_zones');
 
@@ -84,6 +92,32 @@ class PlayScene extends Phaser.Scene {
         TRAPS.setCollisionByExclusion(-1);
 
         return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES, ENEMY_SPAWNS, COLLECTABLES, TRAPS}
+    }
+
+    createBG(map) {
+        const bgObject = map.getObjectLayer('distance_bg').objects[0];
+        this.spikesImg = this.add.tileSprite(bgObject.x, bgObject.y, this.config.width, bgObject.height, 'bg-spikes-dark')
+            .setOrigin(0,1)
+            .setDepth(-10)
+            .setScrollFactor(0, 1);
+
+        this.skyImg = this.add.tileSprite(0, 0, this.config.width, 180, 'sky-play')
+            .setOrigin(0)
+            .setDepth(-11)
+            .setScale(1.1)
+            .setScrollFactor(0, 1);
+    }
+
+    createBackButton() {
+        const btnBack = this.add.image(this.config.rightBottomCorner.x, this.config.rightBottomCorner.y, 'back')
+            .setOrigin(1)
+            .setScrollFactor(0)
+            .setScale(2)
+            .setInteractive();
+
+        btnBack.on('pointerup', () => {
+            this.scene.start('menu-scene');
+        })
     }
 
     createGameEvents() {
@@ -158,6 +192,10 @@ class PlayScene extends Phaser.Scene {
         this.cameras.main.startFollow(player);
     }
 
+    getCurrentLevel() {
+        return this.registry.get('level') || 1
+    }
+
     getPlayerZones(layer) {
         const playerZones = layer.objects;
         return {
@@ -174,8 +212,20 @@ class PlayScene extends Phaser.Scene {
 
         const endOfLevelOverlap = this.physics.add.overlap(player, endOfLevel, () => {
             endOfLevelOverlap.active = false;
-            console.log("Player won!");
+
+            if (this.registry.get('level') === this.config.lastLevel) {
+                this.scene.start('credit-scene');
+                return;
+            }
+            this.registry.inc('level', 1);
+            this.registry.inc('unlocked-levels', 1);
+            this.scene.restart({gameStatus: 'LEVEL_COMPLETED'});
         });
+    }
+
+    update() {
+        this.spikesImg.tilePositionX = this.cameras.main.scrollX * 0.3;
+        this.skyImg.tilePositionX = this.cameras.main.scrollX * 0.1;
     }
 }
 

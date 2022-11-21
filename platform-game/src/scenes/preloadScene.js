@@ -7,9 +7,17 @@ class PreloadScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.tilemapTiledJSON('map', './assets/crystal_world_map.json');
+        this.load.tilemapTiledJSON('level-1', './assets/crystal_world_map_level_1.json');
+        this.load.tilemapTiledJSON('level-2', './assets/crystal_world_map_level_2.json');
+        
         this.load.image('tileset-1', './assets/main_lev_build_1.png');
         this.load.image('tileset-2', './assets/main_lev_build_2.png');
+        this.load.image('bg-spikes-tileset', './assets/bg_spikes_tileset.png');
+        this.load.image('bg-spikes-dark', './assets/bg_spikes_dark.png');
+        this.load.image('sky-play', './assets/sky_play.png');
+        this.load.image('menu-bg', './assets/background01.png');
+        
+        this.load.image('back', './assets/back.png')
         
         this.load.spritesheet('player','./assets/player/move_sprite_1.png', {
             frameWidth: 32,
@@ -66,10 +74,16 @@ class PreloadScene extends Phaser.Scene {
         this.load.image('diamond-4', './assets/collectables/diamond_big_04.png');
         this.load.image('diamond-5', './assets/collectables/diamond_big_05.png');
         this.load.image('diamond-6', './assets/collectables/diamond_big_06.png');
+    
+        this.load.once('complete', () => {
+            this.startGame();
+        });
     }
 
-    create() {
-        this.scene.start('play-scene')
+    startGame() {
+        this.registry.set('level', 1);
+        this.registry.set('unlocked-levels', 1);
+        this.scene.start('menu-scene')
     }
 }
 
