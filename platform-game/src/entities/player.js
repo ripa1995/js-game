@@ -6,6 +6,7 @@ import Projectiles from "../attacks/projectiles";
 import anims from "../mixins/anims";
 import MeleeWeapon from "../attacks/meleeWeapon";
 import { getTimestamp } from "../utils/functions";
+import Projectile from "../attacks/projectile";
 
 class Player extends Phaser.Physics.Arcade.Sprite {
 
@@ -33,7 +34,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.cursors = this.scene.input.keyboard.createCursorKeys();
         
         this.lastDirection = Phaser.Physics.Arcade.FACING_RIGHT;
-        this.projectiles = new Projectiles(this.scene);
+        this.projectiles = new Projectiles(this.scene, 'iceball-1');
         this.meleeWeapon = new MeleeWeapon(this.scene, 0,0, 'sword-default');
 
         this.health = 100;
@@ -54,7 +55,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.scene.input.keyboard.on('keydown-Q', () => {
             this.play('throw',true)
-            this.projectiles.fireProjectile(this);
+            this.projectiles.fireProjectile(this, 'iceball');
         })
 
         this.scene.input.keyboard.on('keydown-E', () => {
@@ -132,7 +133,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.body.touching.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity,-this.bounceVelocity)
     }
 
-    takesHit(initiator) {
+    takesHit(source) {
         if (this.hasBeenHit) {
             return ;
         }
@@ -140,8 +141,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.bounceOff();
         const dmgAnim = this.playDamageTween();
 
-        this.health -= initiator.damage;
+        this.health -= source.damage;
         this.hp.setValue(this.health);
+
+        source instanceof Projectile && source.deliversHit(this);
 
         this.scene.time.delayedCall(750, () => {
             this.hasBeenHit = false

@@ -4,7 +4,7 @@ import { getTimestamp } from "../utils/functions";
 
 class Projectiles extends Phaser.Physics.Arcade.Group {
 
-    constructor(scene) {
+    constructor(scene, key) {
         super(scene.physics.world, scene);
 
         this.createMultiple(
@@ -12,7 +12,7 @@ class Projectiles extends Phaser.Physics.Arcade.Group {
                 frameQuantity: 5,
                 active: false,
                 visible: false,
-                key: 'iceball',
+                key,
                 classType: Projectile
             }
         )
@@ -21,7 +21,7 @@ class Projectiles extends Phaser.Physics.Arcade.Group {
 
     }
 
-    fireProjectile(initiator) {
+    fireProjectile(initiator, animsKey) {
         const projectile = this.getFirstDead(false);
 
         if (!projectile) {
@@ -47,7 +47,7 @@ class Projectiles extends Phaser.Physics.Arcade.Group {
             centerX = center.x - 10;
         }
 
-        projectile.fire(centerX, center.y);
+        projectile.fire(centerX, center.y, animsKey);
         this.timeFromLastProjectile = getTimestamp();
     }
 
