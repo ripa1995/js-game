@@ -153,8 +153,12 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         })
     }
 
-    bounceOff() {
-        this.body.touching.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity,-this.bounceVelocity)
+    bounceOff(source) {
+        if (source.body) {
+            this.body.touching.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity,-this.bounceVelocity)
+        } else {
+            this.body.blocked.right ? this.setVelocity(-this.bounceVelocity) : this.setVelocity(this.bounceVelocity,-this.bounceVelocity)    
+        }
     }
 
     takesHit(source) {
@@ -162,13 +166,13 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             return ;
         }
         this.hasBeenHit = true;
-        this.bounceOff();
+        this.bounceOff(source);
         const dmgAnim = this.playDamageTween();
 
-        this.health -= source.damage;
+        this.health -= source.damage || source.properties.damage || 0;
         this.hp.setValue(this.health);
 
-        source.deliversHit(this);
+        source.deliversHit && source.deliversHit(this);
 
         this.scene.time.delayedCall(750, () => {
             this.hasBeenHit = false

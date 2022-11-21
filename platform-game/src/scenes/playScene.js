@@ -30,7 +30,8 @@ class PlayScene extends Phaser.Scene {
         this.createPlayerColliders(PLAYER, {colliders: {
             platformColliders: LAYERS.LAYER_COLLIDERS,
             projectiles: ENEMIES.getProjectiles(),
-            collectables: COLLECTABLES
+            collectables: COLLECTABLES,
+            traps: LAYERS.TRAPS
         }});
         this.createEnemiesColliders(ENEMIES, {colliders: {
             platformColliders: LAYERS.LAYER_COLLIDERS,
@@ -67,6 +68,8 @@ class PlayScene extends Phaser.Scene {
         const ENEMY_SPAWNS = map.getObjectLayer('enemy_spawns');
         const COLLECTABLES = map.getObjectLayer('collectables');
 
+        const TRAPS = map.createStaticLayer('traps', TILESET_1);
+
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.StaticTilemapLayer.html#setCollisionByExclusion__anchor
         //set collision on all tiles except those defined in the indexes (so -1 means all except -1 and 0) 
         //PLATFORMS.setCollisionByExclusion(-1, true)
@@ -74,8 +77,9 @@ class PlayScene extends Phaser.Scene {
         //https://photonstorm.github.io/phaser3-docs/Phaser.Tilemaps.StaticTilemapLayer.html#setCollisionByProperty__anchor
         //set collision on all tiles that has the specified property defined
         LAYER_COLLIDERS.setCollisionByProperty({collides:true});
+        TRAPS.setCollisionByExclusion(-1);
 
-        return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES, ENEMY_SPAWNS, COLLECTABLES}
+        return {ENVIRONMENT, PLATFORMS, LAYER_COLLIDERS, PLAYER_ZONES, ENEMY_SPAWNS, COLLECTABLES, TRAPS}
     }
 
     createCollectables(collectablesLayer) {
@@ -94,7 +98,8 @@ class PlayScene extends Phaser.Scene {
     createPlayerColliders(player, {colliders}) {
         player
             .addCollider(colliders.platformColliders)
-            .addCollider(colliders.projectiles, this.onWeaponHit)
+            .addCollider(colliders.projectiles, this.onHit)
+            .addCollider(colliders.traps, this.onHit)
             .addOverlap(colliders.collectables, this.onCollect, this);
     }
 
@@ -113,7 +118,7 @@ class PlayScene extends Phaser.Scene {
         player.takesHit(enemy);
     }
 
-    onWeaponHit(entity, source) {
+    onHit(entity, source) {
         //console.log(`${entity} taking dmg from ${source}`);
         entity.takesHit(source);
     }
@@ -132,8 +137,8 @@ class PlayScene extends Phaser.Scene {
         enemies
             .addCollider(colliders.platformColliders)
             .addCollider(colliders.player, this.onPlayerCollision)
-            .addCollider(colliders.player.projectiles, this.onWeaponHit)
-            .addOverlap(colliders.player.meleeWeapon, this.onWeaponHit);
+            .addCollider(colliders.player.projectiles, this.onHit)
+            .addOverlap(colliders.player.meleeWeapon, this.onHit);
     }
 
     setupFollowupCameraOn(player) {
